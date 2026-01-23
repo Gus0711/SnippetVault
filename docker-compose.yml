@@ -1,0 +1,14 @@
+services:
+  snippetvault:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=file:/app/data/snippetvault.db
+      - UPLOAD_DIR=/app/data/uploads
+      - UPLOAD_MAX_SIZE=52428800
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - ORIGIN=${ORIGIN:-http://localhost:3000}
+    restart: unless-stopped
