@@ -2,20 +2,23 @@ import type { Handle } from '@sveltejs/kit';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { env } from '$env/dynamic/private';
+import { building } from '$app/environment';
 import {
 	validateSession,
 	setSessionCookie,
 	deleteSessionCookie,
 	SESSION_COOKIE_NAME
 } from '$lib/server/auth';
-import { rebuildFTSIndex } from '$lib/server/db';
 
 const UPLOAD_DIR = env.UPLOAD_DIR || './data/uploads';
 
-// Rebuild FTS index on server startup
-console.log('[FTS] Rebuilding search index...');
-rebuildFTSIndex();
-console.log('[FTS] Search index ready');
+// Rebuild FTS index on server startup (skip during build)
+if (!building) {
+	const { rebuildFTSIndex } = await import('$lib/server/db');
+	console.log('[FTS] Rebuilding search index...');
+	rebuildFTSIndex();
+	console.log('[FTS] Search index ready');
+}
 
 // MIME types for uploaded files
 const MIME_TYPES: Record<string, string> = {

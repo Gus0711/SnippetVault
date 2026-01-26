@@ -1,21 +1,27 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
-import { env } from '$env/dynamic/private';
+import { building } from '$app/environment';
 
-const dbPath = env.DATABASE_URL?.replace('file:', '') || './data/snippetvault.db';
-const sqlite = new Database(dbPath);
+// Skip database initialization during build
+let sqlite: Database.Database;
+let db: ReturnType<typeof drizzle>;
 
-// Enable WAL mode for better performance
-sqlite.pragma('journal_mode = WAL');
+if (!building) {
+	const { env } = await import('$env/dynamic/private');
+	const dbPath = env.DATABASE_URL?.replace('file:', '') || './data/snippetvault.db';
+	sqlite = new Database(dbPath);
 
-export const db = drizzle(sqlite, { schema });
+	// Enable WAL mode for better performance
+	sqlite.pragma('journal_mode = WAL');
 
-// Export raw SQLite client for recursive CTEs and FTS5
-export { sqlite };
+	db = drizzle(sqlite, { schema });
 
-// Initialize FTS5 full-text search
-initializeFTS5();
+	// Initialize FTS5 full-text search
+	initializeFTS5();
+}
+
+export { db, sqlite };
 
 function initializeFTS5() {
 	// Check if FTS table exists and has correct structure
