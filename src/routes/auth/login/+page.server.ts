@@ -9,6 +9,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
 		redirect(302, '/dashboard');
 	}
+
+	// Redirect to setup if no users exist
+	const userCount = await db.select().from(users).all();
+	if (userCount.length === 0) {
+		redirect(302, '/auth/setup');
+	}
 };
 
 export const actions: Actions = {
