@@ -1,15 +1,23 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import CreateCollectionModal from '$lib/components/CreateCollectionModal.svelte';
-	import { Search, User, LogOut, ChevronDown } from 'lucide-svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { themeStore } from '$lib/stores/theme.svelte';
+	import { Settings, LogOut, ChevronDown } from 'lucide-svelte';
 
 	let { data, children } = $props();
 
 	let sidebarCollapsed = $state(false);
 	let createModalOpen = $state(false);
 	let userMenuOpen = $state(false);
+
+	// Initialize theme from server preference
+	onMount(() => {
+		themeStore.init(data.user.themePreference);
+	});
 
 	const handleCreateCollection = async (collectionData: {
 		name: string;
@@ -39,6 +47,8 @@
 	<!-- Sidebar -->
 	<Sidebar
 		collections={data.collections}
+		sharedCollections={data.sharedCollections}
+		favoriteSnippets={data.favoriteSnippets}
 		collapsed={sidebarCollapsed}
 		onToggle={() => (sidebarCollapsed = !sidebarCollapsed)}
 		onCreateCollection={() => (createModalOpen = true)}
@@ -47,21 +57,9 @@
 	<!-- Main content -->
 	<div class="flex-1 flex flex-col min-w-0">
 		<!-- Header -->
-		<header class="h-10 border-b border-border flex items-center justify-between px-3 shrink-0">
-			<!-- Search -->
-			<div class="flex-1 max-w-sm">
-				<div class="relative">
-					<Search
-						size={14}
-						class="absolute left-2 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
-					/>
-					<input
-						type="text"
-						placeholder="Rechercher... (Ctrl+K)"
-						class="w-full pl-7 pr-3 py-1 bg-surface border border-border rounded text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent"
-					/>
-				</div>
-			</div>
+		<header class="h-9 border-b border-border flex items-center justify-end px-2 gap-1 shrink-0">
+			<!-- Theme toggle -->
+			<ThemeToggle />
 
 			<!-- User menu -->
 			<div class="relative">
@@ -77,32 +75,32 @@
 					>
 						{data.user.name.charAt(0).toUpperCase()}
 					</div>
-					<span class="text-foreground hidden sm:inline">{data.user.name}</span>
-					<ChevronDown size={12} class="text-muted" />
+					<span class="text-foreground hidden sm:inline text-[11px]">{data.user.name}</span>
+					<ChevronDown size={10} class="text-muted" />
 				</button>
 
 				{#if userMenuOpen}
 					<div
-						class="absolute right-0 top-full mt-1 w-44 bg-background border border-border rounded shadow-lg py-0.5 z-50"
+						class="absolute right-0 top-full mt-1 w-40 bg-background border border-border rounded shadow-lg py-0.5 z-50"
 					>
-						<div class="px-2.5 py-1.5 border-b border-border">
-							<p class="text-xs font-medium text-foreground">{data.user.name}</p>
-							<p class="text-[10px] text-muted">{data.user.email}</p>
+						<div class="px-2 py-1.5 border-b border-border">
+							<p class="text-[11px] font-medium text-foreground">{data.user.name}</p>
+							<p class="text-[9px] text-muted truncate">{data.user.email}</p>
 						</div>
 						<a
 							href="/settings"
-							class="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:bg-surface transition-colors"
+							class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors"
 						>
-							<User size={12} />
-							Paramètres
+							<Settings size={11} strokeWidth={1.5} />
+							Parametres
 						</a>
 						<form method="POST" action="/auth/logout" use:enhance>
 							<button
 								type="submit"
-								class="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:bg-surface transition-colors w-full text-left"
+								class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors w-full text-left"
 							>
-								<LogOut size={12} />
-								Déconnexion
+								<LogOut size={11} strokeWidth={1.5} />
+								Deconnexion
 							</button>
 						</form>
 					</div>

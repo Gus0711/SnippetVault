@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
-	import SnippetList from '$lib/components/SnippetList.svelte';
+	import SnippetTable from '$lib/components/SnippetTable.svelte';
+	import ShareCollectionModal from '$lib/components/ShareCollectionModal.svelte';
 	import {
 		Plus,
 		Folder,
@@ -10,7 +11,9 @@
 		MoreHorizontal,
 		Pencil,
 		Trash2,
-		X
+		X,
+		Share2,
+		Users
 	} from 'lucide-svelte';
 
 	let { data } = $props();
@@ -18,7 +21,11 @@
 	let menuOpen = $state(false);
 	let renameModalOpen = $state(false);
 	let deleteModalOpen = $state(false);
+	let shareModalOpen = $state(false);
 	let newName = $state('');
+
+	const isOwner = data.permission === 'owner';
+	const canWrite = data.permission === 'owner' || data.permission === 'write';
 
 	const closeMenus = () => {
 		menuOpen = false;
@@ -38,12 +45,12 @@
 
 <svelte:window onclick={closeMenus} />
 
-<div class="p-6">
+<div class="p-3">
 	<!-- Breadcrumb -->
-	<nav class="flex items-center gap-1 text-sm text-muted mb-4">
+	<nav class="flex items-center gap-1 text-[10px] text-muted mb-3">
 		<a href="/dashboard" class="hover:text-foreground transition-colors">Dashboard</a>
 		{#each data.breadcrumb as crumb, i (crumb.id)}
-			<ChevronRight size={14} />
+			<ChevronRight size={10} strokeWidth={1.5} />
 			{#if i === data.breadcrumb.length - 1}
 				<span class="text-foreground">{crumb.name}</span>
 			{:else}
@@ -55,82 +62,104 @@
 	</nav>
 
 	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
-		<div class="flex items-center gap-3">
+	<div class="flex items-center justify-between mb-3">
+		<div class="flex items-center gap-2">
 			{#if data.collection.icon}
-				<span class="text-2xl">{data.collection.icon}</span>
+				<span class="text-base">{data.collection.icon}</span>
+			{:else if !isOwner}
+				<Users size={16} strokeWidth={1.5} class="text-muted" />
 			{:else}
-				<FolderOpen size={24} class="text-muted" />
+				<FolderOpen size={16} strokeWidth={1.5} class="text-muted" />
 			{/if}
 			<div>
-				<h1 class="text-xl font-semibold text-foreground">{data.collection.name}</h1>
-				{#if data.collection.description}
-					<p class="text-sm text-muted mt-0.5">{data.collection.description}</p>
-				{/if}
+				<h1 class="text-sm font-semibold text-foreground">{data.collection.name}</h1>
+				<div class="flex items-center gap-2 mt-0.5">
+					{#if data.collection.description}
+						<p class="text-[10px] text-muted">{data.collection.description}</p>
+					{/if}
+					{#if !isOwner && data.ownerName}
+						<span class="text-[10px] text-muted flex items-center gap-1">
+							<Users size={10} strokeWidth={1.5} />
+							Partagee par {data.ownerName}
+							{#if data.permission === 'read'}
+								<span class="text-muted/60">(lecture seule)</span>
+							{/if}
+						</span>
+					{/if}
+				</div>
 			</div>
 		</div>
 
-		<div class="flex items-center gap-2">
-			<a
-				href="/snippets/new?collection={data.collection.id}"
-				class="flex items-center gap-2 px-3 py-2 bg-accent text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
-			>
-				<Plus size={16} />
-				Nouveau snippet
-			</a>
-
-			<!-- Actions menu -->
-			<div class="relative">
-				<button
-					onclick={(e) => {
-						e.stopPropagation();
-						menuOpen = !menuOpen;
-					}}
-					class="p-2 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
+		<div class="flex items-center gap-1.5">
+			{#if canWrite}
+				<a
+					href="/snippets/new?collection={data.collection.id}"
+					class="flex items-center gap-1 px-2 py-1 bg-accent text-white rounded text-[11px] font-medium hover:opacity-90 transition-opacity"
 				>
-					<MoreHorizontal size={18} />
+					<Plus size={12} strokeWidth={2} />
+					Nouveau
+				</a>
+			{/if}
+
+			{#if isOwner}
+				<button
+					onclick={() => (shareModalOpen = true)}
+					class="flex items-center gap-1 px-2 py-1 border border-border rounded text-[11px] hover:bg-surface transition-colors"
+				>
+					<Share2 size={12} strokeWidth={1.5} />
+					Partager
 				</button>
 
-				{#if menuOpen}
-					<div
-						class="absolute right-0 top-full mt-1 w-40 bg-background border border-border rounded-md shadow-lg py-1 z-50"
+				<div class="relative">
+					<button
+						onclick={(e) => {
+							e.stopPropagation();
+							menuOpen = !menuOpen;
+						}}
+						class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
 					>
-						<button
-							onclick={openRename}
-							class="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface transition-colors w-full text-left"
-						>
-							<Pencil size={14} />
-							Renommer
-						</button>
-						<button
-							onclick={openDelete}
-							class="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-surface transition-colors w-full text-left"
-						>
-							<Trash2 size={14} />
-							Supprimer
-						</button>
-					</div>
-				{/if}
-			</div>
+						<MoreHorizontal size={14} strokeWidth={1.5} />
+					</button>
+
+					{#if menuOpen}
+						<div class="absolute right-0 top-full mt-1 w-32 bg-background border border-border rounded shadow-lg py-0.5 z-50">
+							<button
+								onclick={openRename}
+								class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors w-full text-left"
+							>
+								<Pencil size={11} strokeWidth={1.5} />
+								Renommer
+							</button>
+							<button
+								onclick={openDelete}
+								class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-red-500 hover:bg-surface transition-colors w-full text-left"
+							>
+								<Trash2 size={11} strokeWidth={1.5} />
+								Supprimer
+							</button>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 
 	<!-- Child collections -->
 	{#if data.childCollections.length > 0}
-		<div class="mb-6">
-			<h2 class="text-sm font-medium text-muted mb-3">Sous-collections</h2>
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+		<div class="mb-3">
+			<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide mb-2">Sous-collections</h2>
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
 				{#each data.childCollections as child (child.id)}
 					<a
 						href="/collections/{child.id}"
-						class="flex items-center gap-2 p-3 bg-surface border border-border rounded-lg hover:border-accent/50 transition-colors"
+						class="flex items-center gap-1.5 px-2 py-1.5 bg-surface border border-border rounded hover:border-accent/40 transition-colors"
 					>
 						{#if child.icon}
-							<span class="text-lg">{child.icon}</span>
+							<span class="text-[11px]">{child.icon}</span>
 						{:else}
-							<Folder size={18} class="text-muted" />
+							<Folder size={12} strokeWidth={1.5} class="text-muted" />
 						{/if}
-						<span class="text-sm text-foreground truncate">{child.name}</span>
+						<span class="text-[11px] text-foreground truncate">{child.name}</span>
 					</a>
 				{/each}
 			</div>
@@ -138,18 +167,7 @@
 	{/if}
 
 	<!-- Snippets -->
-	<div class="bg-surface border border-border rounded-lg">
-		<div class="px-4 py-3 border-b border-border">
-			<h2 class="text-sm font-medium text-foreground">
-				Snippets ({data.snippets.length})
-			</h2>
-		</div>
-		<SnippetList
-			snippets={data.snippets}
-			showCollection={false}
-			emptyMessage="Aucun snippet dans cette collection"
-		/>
-	</div>
+	<SnippetTable snippets={data.snippets} allTags={data.tags} allCollections={data.collections} />
 </div>
 
 <!-- Rename modal -->
@@ -158,17 +176,17 @@
 	<div class="fixed inset-0 bg-black/50 z-40" onclick={() => (renameModalOpen = false)}></div>
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
 		<div
-			class="bg-background border border-border rounded-lg shadow-lg w-full max-w-sm"
+			class="bg-background border border-border rounded shadow-lg w-full max-w-xs"
 			onclick={(e) => e.stopPropagation()}
 			role="presentation"
 		>
-			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Renommer la collection</h2>
+			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
+				<h2 class="text-sm font-medium text-foreground">Renommer</h2>
 				<button
 					onclick={() => (renameModalOpen = false)}
-					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
+					class="p-0.5 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
 				>
-					<X size={18} />
+					<X size={14} />
 				</button>
 			</div>
 			<form
@@ -182,7 +200,7 @@
 						}
 					};
 				}}
-				class="p-4"
+				class="p-3"
 			>
 				<input
 					type="text"
@@ -190,19 +208,19 @@
 					bind:value={newName}
 					required
 					autofocus
-					class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+					class="w-full px-2 py-1.5 bg-surface border border-border rounded text-[11px] text-foreground focus:outline-none focus:border-accent"
 				/>
-				<div class="flex justify-end gap-2 mt-4">
+				<div class="flex justify-end gap-1.5 mt-3">
 					<button
 						type="button"
 						onclick={() => (renameModalOpen = false)}
-						class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
+						class="px-2 py-1 text-[11px] text-muted hover:text-foreground transition-colors"
 					>
 						Annuler
 					</button>
 					<button
 						type="submit"
-						class="px-4 py-2 text-sm bg-accent text-white rounded-md hover:opacity-90 transition-opacity"
+						class="px-2.5 py-1 text-[11px] bg-accent text-white rounded hover:opacity-90 transition-opacity"
 					>
 						Renommer
 					</button>
@@ -218,27 +236,26 @@
 	<div class="fixed inset-0 bg-black/50 z-40" onclick={() => (deleteModalOpen = false)}></div>
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
 		<div
-			class="bg-background border border-border rounded-lg shadow-lg w-full max-w-sm"
+			class="bg-background border border-border rounded shadow-lg w-full max-w-xs"
 			onclick={(e) => e.stopPropagation()}
 			role="presentation"
 		>
-			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Supprimer la collection</h2>
+			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
+				<h2 class="text-sm font-medium text-foreground">Supprimer</h2>
 				<button
 					onclick={() => (deleteModalOpen = false)}
-					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
+					class="p-0.5 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
 				>
-					<X size={18} />
+					<X size={14} />
 				</button>
 			</div>
-			<div class="p-4">
-				<p class="text-sm text-muted mb-4">
-					Voulez-vous vraiment supprimer la collection "{data.collection.name}" ?
+			<div class="p-3">
+				<p class="text-[11px] text-muted mb-3">
+					Supprimer "{data.collection.name}" ?
 				</p>
 				{#if data.snippets.length > 0 || data.childCollections.length > 0}
-					<p class="text-sm text-red-500 mb-4">
-						Cette collection contient {data.snippets.length} snippet(s) et/ou {data.childCollections
-							.length} sous-collection(s). Supprimez-les d'abord.
+					<p class="text-[10px] text-red-500 mb-3">
+						Contient {data.snippets.length} snippet(s) et {data.childCollections.length} sous-collection(s).
 					</p>
 				{/if}
 				<form
@@ -248,27 +265,23 @@
 						return async ({ result }) => {
 							if (result.type === 'success') {
 								const data = result.data as { redirect?: string } | undefined;
-								if (data?.redirect) {
-									goto(data.redirect);
-								} else {
-									goto('/dashboard');
-								}
+								goto(data?.redirect || '/dashboard');
 							}
 						};
 					}}
 				>
-					<div class="flex justify-end gap-2">
+					<div class="flex justify-end gap-1.5">
 						<button
 							type="button"
 							onclick={() => (deleteModalOpen = false)}
-							class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
+							class="px-2 py-1 text-[11px] text-muted hover:text-foreground transition-colors"
 						>
 							Annuler
 						</button>
 						<button
 							type="submit"
 							disabled={data.snippets.length > 0 || data.childCollections.length > 0}
-							class="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+							class="px-2.5 py-1 text-[11px] bg-red-500 text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
 						>
 							Supprimer
 						</button>
@@ -278,3 +291,13 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Share modal -->
+<ShareCollectionModal
+	open={shareModalOpen}
+	collectionId={data.collection.id}
+	collectionName={data.collection.name}
+	members={data.members}
+	onClose={() => (shareModalOpen = false)}
+	onUpdate={() => invalidateAll()}
+/>

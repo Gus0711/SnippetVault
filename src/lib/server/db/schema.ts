@@ -77,6 +77,8 @@ export const snippets = sqliteTable('snippets', {
 		.notNull()
 		.references(() => users.id, { onDelete: 'cascade' }),
 	status: text('status', { enum: ['draft', 'published'] }).notNull().default('draft'),
+	isFavorite: integer('is_favorite', { mode: 'boolean' }).notNull().default(false),
+	isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
 	publicId: text('public_id').unique(),
 	publicTheme: text('public_theme').notNull().default('github-dark'),
 	publicShowDescription: integer('public_show_description', { mode: 'boolean' })

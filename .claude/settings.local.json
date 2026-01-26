@@ -17,7 +17,20 @@
       "Bash(sqlite3:*)",
       "Bash(taskkill:*)",
       "Bash(netstat:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(find \"C:\\\\Users\\\\augus\\\\Documents\\\\GitHub\\\\SnippetVault\\\\src\\\\routes\\\\\\(app\\)\\\\collections\\\\[id]\" -type f -name \"*.svelte\" -o -name \"*.ts\")",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx svelte-check:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -e:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(git checkout:*)",
+      "Bash(find:*)",
+      "Bash(powershell -Command \"if \\(Test-Path ''.svelte-kit''\\) { Remove-Item -Recurse -Force ''.svelte-kit'' }; npx svelte-kit sync\")"
     ]
   }
 }

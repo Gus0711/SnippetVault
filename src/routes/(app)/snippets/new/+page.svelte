@@ -2,11 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { ArrowLeft, Save, X, Plus, ChevronRight, Tag as TagIcon } from 'lucide-svelte';
 	import type { Collection, Tag } from '$lib/server/db/schema';
+	import { BlockEditor, type Block } from '$lib/components/editor';
+	import { detectLanguage } from '$lib/utils/colors';
 
 	let { data } = $props();
 
 	let title = $state('');
-	let content = $state('');
+	let blocks = $state<Block[]>([]);
 	let selectedCollectionId = $state<string | null>(null);
 	let selectedTagIds = $state<string[]>([]);
 	let newTagName = $state('');
@@ -97,6 +99,10 @@
 		}
 	};
 
+	const handleEditorUpdate = (newBlocks: Block[]) => {
+		blocks = newBlocks;
+	};
+
 	const handleSubmit = async () => {
 		if (!title.trim()) {
 			error = 'Le titre est requis';
@@ -106,6 +112,17 @@
 		saving = true;
 		error = null;
 
+		// Auto-detect language for code blocks with plaintext
+		const processedBlocks = blocks.map((block) => {
+			if (block.type === 'code' && (!block.language || block.language === 'plaintext')) {
+				const detected = detectLanguage(block.content);
+				if (detected) {
+					return { ...block, language: detected };
+				}
+			}
+			return block;
+		});
+
 		try {
 			const response = await fetch('/api/snippets', {
 				method: 'POST',
@@ -113,7 +130,7 @@
 				body: JSON.stringify({
 					title: title.trim(),
 					collectionId: selectedCollectionId,
-					content: content.trim(),
+					blocks: processedBlocks,
 					tagIds: selectedTagIds
 				})
 			});
@@ -133,7 +150,7 @@
 	};
 </script>
 
-<div class="p-6 max-w-4xl mx-auto">
+<div class="px-6 py-4 max-w-6xl mx-auto">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
@@ -268,18 +285,12 @@
 			{/if}
 		</div>
 
-		<!-- Content (temporary textarea) -->
+		<!-- Content (Block Editor) -->
 		<div>
-			<label for="content" class="block text-sm font-medium text-foreground mb-1.5">Contenu</label>
-			<textarea
-				id="content"
-				bind:value={content}
-				rows={15}
-				placeholder="// Votre code ici..."
-				class="w-full px-3 py-2 bg-surface border border-border rounded text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent font-mono text-sm resize-y"
-			></textarea>
-			<p class="mt-1 text-xs text-muted">
-				L'éditeur block-based (TipTap) sera ajouté prochainement.
+			<label class="block text-sm font-medium text-foreground mb-1.5">Contenu</label>
+			<BlockEditor onUpdate={handleEditorUpdate} />
+			<p class="mt-2 text-xs text-muted">
+				Tapez <kbd class="px-1 py-0.5 bg-surface border border-border rounded text-[10px]">/</kbd> pour inserer un bloc (code, image, titre...)
 			</p>
 		</div>
 	</div>

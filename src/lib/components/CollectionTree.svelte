@@ -46,34 +46,34 @@
 	<div class="select-none">
 		<a
 			href="/collections/{collection.id}"
-			class="group flex items-center gap-0.5 px-1 py-0.5 rounded text-xs {active
+			class="group flex items-center gap-0.5 px-1 py-[3px] rounded text-[11px] {active
 				? 'bg-accent/10 text-accent'
-				: 'text-foreground/80 hover:text-foreground hover:bg-background'} transition-colors"
-			style="padding-left: {level * 10 + 4}px"
+				: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors"
+			style="padding-left: {level * 8 + 4}px"
 		>
 			<!-- Expand/collapse button -->
 			{#if children}
 				<button
 					onclick={(e) => toggleExpanded(collection.id, e)}
-					class="p-0.5 rounded hover:bg-border/50 text-muted shrink-0"
+					class="p-0.5 rounded hover:bg-border/30 text-muted/70 shrink-0"
 				>
 					{#if expanded}
-						<ChevronDown size={12} />
+						<ChevronDown size={10} strokeWidth={1.5} />
 					{:else}
-						<ChevronRight size={12} />
+						<ChevronRight size={10} strokeWidth={1.5} />
 					{/if}
 				</button>
 			{:else}
-				<span class="w-4 shrink-0"></span>
+				<span class="w-3.5 shrink-0"></span>
 			{/if}
 
 			<!-- Icon -->
 			{#if collection.icon}
-				<span class="text-xs w-4 text-center shrink-0">{collection.icon}</span>
+				<span class="text-[11px] w-3.5 text-center shrink-0">{collection.icon}</span>
 			{:else if expanded || active}
-				<FolderOpen size={12} class="text-muted shrink-0" />
+				<FolderOpen size={12} strokeWidth={1.5} class="text-muted/70 shrink-0" />
 			{:else}
-				<Folder size={12} class="text-muted shrink-0" />
+				<Folder size={12} strokeWidth={1.5} class="text-muted/70 shrink-0" />
 			{/if}
 
 			<!-- Name -->

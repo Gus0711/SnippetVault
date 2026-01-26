@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db, snippets, snippetBlocks, snippetTags, tags, collections } from '$lib/server/db';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
+import { getCollectionPermission, canWrite } from '$lib/server/services/permissions';
 
 // GET /api/snippets - List all snippets for the user
 export const GET: RequestHandler = async ({ locals, url }) => {
@@ -34,6 +35,16 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	return json({ data: filteredSnippets });
 };
 
+// Block type from editor
+interface EditorBlock {
+	type: 'markdown' | 'code' | 'image' | 'file';
+	content: string;
+	language?: string | null;
+	filePath?: string | null;
+	fileName?: string | null;
+	fileSize?: number | null;
+}
+
 // POST /api/snippets - Create a new snippet
 export const POST: RequestHandler = async ({ locals, request }) => {
 	if (!locals.user) {
@@ -42,13 +53,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
 	try {
 		const body = await request.json();
-		const { title, collectionId, content, tagIds } = body;
+		const { title, collectionId, blocks, tagIds, content } = body;
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
 			return json({ error: 'Title is required' }, { status: 400 });
 		}
 
-		// Verify collection exists and belongs to user if provided
+		// Verify collection exists and user has write permission
 		if (collectionId) {
 			const collection = await db
 				.select()
@@ -60,8 +71,10 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 				return json({ error: 'Collection not found' }, { status: 404 });
 			}
 
-			if (collection.ownerId !== locals.user.id) {
-				return json({ error: 'Collection does not belong to you' }, { status: 403 });
+			// Check permission (owner or write member)
+			const permission = await getCollectionPermission(collectionId, locals.user.id);
+			if (!canWrite(permission)) {
+				return json({ error: 'Access denied to this collection' }, { status: 403 });
 			}
 		}
 
@@ -79,8 +92,25 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 			updatedAt: now
 		});
 
-		// Create initial block with content (if provided)
-		if (content && content.trim().length > 0) {
+		// Create blocks (new format with array of blocks)
+		if (blocks && Array.isArray(blocks) && blocks.length > 0) {
+			for (let i = 0; i < blocks.length; i++) {
+				const block = blocks[i] as EditorBlock;
+				await db.insert(snippetBlocks).values({
+					id: crypto.randomUUID(),
+					snippetId,
+					order: i,
+					type: block.type,
+					content: block.content || null,
+					language: block.language || null,
+					filePath: block.filePath || null,
+					fileName: block.fileName || null,
+					fileSize: block.fileSize || null
+				});
+			}
+		}
+		// Legacy: support old content format (single code block)
+		else if (content && typeof content === 'string' && content.trim().length > 0) {
 			await db.insert(snippetBlocks).values({
 				id: crypto.randomUUID(),
 				snippetId,

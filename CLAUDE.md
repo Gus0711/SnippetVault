@@ -54,7 +54,10 @@ snippetvault/
 │   ├── lib/
 │   │   ├── components/      # Svelte components
 │   │   │   ├── ui/          # Generic components (shadcn)
-│   │   │   ├── editor/      # Block-based editor
+│   │   │   ├── editor/      # Block-based editor (TipTap)
+│   │   │   │   ├── BlockEditor.svelte
+│   │   │   │   ├── SlashMenu.svelte
+│   │   │   │   └── FileBlock.ts
 │   │   │   ├── snippet/     # Snippet display
 │   │   │   └── search/      # Search components
 │   │   ├── server/
@@ -63,7 +66,7 @@ snippetvault/
 │   │   │   │   └── index.ts
 │   │   │   ├── auth/        # Lucia config
 │   │   │   └── services/    # Business logic
-│   │   ├── stores/          # Svelte stores
+│   │   ├── stores/          # Svelte stores (.svelte.ts for runes)
 │   │   ├── types/           # Shared TypeScript types
 │   │   └── utils/           # Helpers
 │   ├── routes/
@@ -97,7 +100,7 @@ ORIGIN=http://localhost:5173
 - **collections**: id, name, parent_id (unlimited hierarchy), owner_id, is_shared
 - **collection_members**: collection_id, user_id, permission (read/write)
 - **snippets**: id, title, collection_id, author_id, status (draft/published), public_id
-- **snippet_blocks**: id, snippet_id, order, type (markdown/code/image/file), content, language
+- **snippet_blocks**: id, snippet_id, order, type (markdown/code/image/file), content, language, file_path, file_name, file_size
 - **tags**: id, name, color, user_id
 - **snippet_tags**: snippet_id, tag_id
 - **invitations**: id, email, token, invited_by, expires_at
@@ -191,6 +194,86 @@ ORIGIN=http://localhost:5173
 4. **Mobile-friendly**: desktop-first but reading should be pleasant on mobile
 5. **Language**: UI can be in French, code/comments in English
 
+## Session Continuity
+
+**See `reprise.md`** for the latest development status, recently implemented features, and next steps. This file is updated at the end of each session.
+
+## FTS5 Search Implementation
+
+The full-text search is implemented in `src/lib/server/db/index.ts`:
+- Virtual table `snippets_fts` indexes: title, block content, tags
+- Triggers auto-sync on snippet/block/tag changes
+- `rebuildFTSIndex()` called at server startup in `hooks.server.ts`
+- API: `GET /api/search?q=query&collection=id&tag=name&status=draft|published`
+
+## Block Editor (TipTap)
+
+The block-based editor is located in `src/lib/components/editor/`:
+
+### Components
+- **BlockEditor.svelte**: Main editor component with TipTap
+- **SlashMenu.svelte**: Slash command menu (type `/` to insert blocks)
+- **FileBlock.ts**: Custom TipTap Node extension for file attachments
+
+### Supported Block Types
+- **markdown**: Text with headings, lists, quotes, inline formatting
+- **code**: Syntax-highlighted code blocks (via lowlight)
+- **image**: Uploaded images
+- **file**: File attachments (PDF, ZIP, etc.)
+- **table**: Tables with header row/column support
+
+### Table Features
+- Insert via `/table` slash command
+- Toggle header row/column/cell
+- Add/remove rows and columns
+- Resize columns
+- Visual borders and styling
+
+### File Upload
+- Endpoint: `POST /api/upload`
+- Supports images and general files
+- Blocked extensions: exe, bat, cmd, msi, scr, ps1, vbs, js, jar
+- Max size: 50MB (configurable via `UPLOAD_MAX_SIZE`)
+
+### Slash Commands
+Type `/` in the editor to access:
+- `/code` - Code block
+- `/image` - Upload image
+- `/file` - Attach file
+- `/table` - Insert 3x3 table
+- `/h1`, `/h2`, `/h3` - Headings
+- `/bullet`, `/numbered` - Lists
+- `/quote` - Blockquote
+
+## Svelte 5 Runes
+
+**Important**: Files using Svelte 5 runes (`$state`, `$derived`, `$effect`) must use the `.svelte.ts` extension, not `.ts`.
+
+Example: `src/lib/stores/theme.svelte.ts`
+
+```typescript
+// theme.svelte.ts - note the .svelte.ts extension
+let current = $state<'light' | 'dark'>('dark');
+
+export const theme = {
+  get current() { return current; },
+  set current(value) { current = value; }
+};
+```
+
+## Drizzle ORM Notes
+
+**Important**: Drizzle's `.all()` method returns an array directly, NOT a Promise.
+
+```typescript
+// Correct
+const results = await db.select().from(table).where(...).all();
+const filtered = results.filter(r => r.status === 'active');
+
+// Wrong - will throw "TypeError: .all(...).then is not a function"
+const results = await db.select().from(table).where(...).all().then(r => r.filter(...));
+```
+
 ## Documentation Reference
 
 When uncertain about syntax, API, or behavior, consult official documentation:
@@ -200,7 +283,9 @@ When uncertain about syntax, API, or behavior, consult official documentation:
 - Svelte 5: `/sveltejs/svelte` (runes: $state, $derived, etc.)
 - Drizzle ORM: `/drizzle-team/drizzle-orm`
 - Lucia Auth: `/lucia-auth/lucia`
-- Tailwind CSS: `/tailwindlabs/tailwindcss`
+- Tailwind CSS v4: `/tailwindlabs/tailwindcss` (uses `@import 'tailwindcss'` syntax)
 - TipTap: `/ueberdosis/tiptap`
+- TipTap Table: `@tiptap/extension-table` (use named imports: `import { Table } from '@tiptap/extension-table'`)
 - Shiki: `/shikijs/shiki`
 - Lucide icons: `/lucide-icons/lucide`
+- lowlight: `/wooorm/lowlight` (for TipTap code blocks)

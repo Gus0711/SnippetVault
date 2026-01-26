@@ -2,17 +2,31 @@
 	import { goto } from '$app/navigation';
 	import { ArrowLeft, Save, X, Plus, Tag as TagIcon } from 'lucide-svelte';
 	import type { Collection } from '$lib/server/db/schema';
+	import { BlockEditor, type Block } from '$lib/components/editor';
+	import { detectLanguage } from '$lib/utils/colors';
 
 	let { data } = $props();
 
+	// Convert existing blocks to editor format
+	const initialBlocks: Block[] = data.snippet.blocks.map((b: any) => ({
+		type: b.type as 'markdown' | 'code' | 'image',
+		content: b.content || '',
+		language: b.language,
+		filePath: b.filePath
+	}));
+
 	let title = $state(data.snippet.title);
-	let content = $state(data.snippet.blocks[0]?.content || '');
+	let blocks = $state<Block[]>(initialBlocks);
 	let selectedCollectionId = $state<string | null>(data.snippet.collectionId);
 	let selectedTagIds = $state<string[]>(data.snippet.tagIds);
 	let newTagName = $state('');
 	let showTagInput = $state(false);
 	let saving = $state(false);
 	let error = $state<string | null>(null);
+
+	const handleEditorUpdate = (newBlocks: Block[]) => {
+		blocks = newBlocks;
+	};
 
 	// Build collection tree for dropdown
 	interface CollectionNode extends Collection {
@@ -99,6 +113,17 @@
 		saving = true;
 		error = null;
 
+		// Auto-detect language for code blocks with plaintext
+		const processedBlocks = blocks.map((block) => {
+			if (block.type === 'code' && (!block.language || block.language === 'plaintext')) {
+				const detected = detectLanguage(block.content);
+				if (detected) {
+					return { ...block, language: detected };
+				}
+			}
+			return block;
+		});
+
 		try {
 			const response = await fetch(`/api/snippets/${data.snippet.id}`, {
 				method: 'PUT',
@@ -106,7 +131,7 @@
 				body: JSON.stringify({
 					title: title.trim(),
 					collectionId: selectedCollectionId,
-					content: content.trim(),
+					blocks: processedBlocks,
 					tagIds: selectedTagIds
 				})
 			});
@@ -125,7 +150,7 @@
 	};
 </script>
 
-<div class="p-6 max-w-4xl mx-auto">
+<div class="px-6 py-4 max-w-6xl mx-auto">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
@@ -260,18 +285,16 @@
 			{/if}
 		</div>
 
-		<!-- Content (temporary textarea) -->
+		<!-- Content (Block Editor) -->
 		<div>
-			<label for="content" class="block text-sm font-medium text-foreground mb-1.5">Contenu</label>
-			<textarea
-				id="content"
-				bind:value={content}
-				rows={15}
-				placeholder="// Votre code ici..."
-				class="w-full px-3 py-2 bg-surface border border-border rounded text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent font-mono text-sm resize-y"
-			></textarea>
-			<p class="mt-1 text-xs text-muted">
-				L'éditeur block-based (TipTap) sera ajouté prochainement.
+			<label class="block text-sm font-medium text-foreground mb-1.5">Contenu</label>
+			<BlockEditor
+				initialBlocks={initialBlocks}
+				snippetId={data.snippet.id}
+				onUpdate={handleEditorUpdate}
+			/>
+			<p class="mt-2 text-xs text-muted">
+				Tapez <kbd class="px-1 py-0.5 bg-surface border border-border rounded text-[10px]">/</kbd> pour inserer un bloc (code, image, titre...)
 			</p>
 		</div>
 	</div>

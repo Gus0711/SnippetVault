@@ -8,116 +8,226 @@
 		Search,
 		Settings,
 		ChevronLeft,
-		ChevronRight
+		ChevronRight,
+		Users,
+		Eye,
+		Star
 	} from 'lucide-svelte';
+
+	interface SharedCollection {
+		id: string;
+		name: string;
+		icon: string | null;
+		permission: 'read' | 'write';
+		ownerName: string;
+	}
+
+	interface FavoriteSnippet {
+		id: string;
+		title: string;
+	}
 
 	interface Props {
 		collections: Collection[];
+		sharedCollections?: SharedCollection[];
+		favoriteSnippets?: FavoriteSnippet[];
 		collapsed?: boolean;
 		onToggle?: () => void;
 		onCreateCollection?: () => void;
 	}
 
-	let { collections, collapsed = false, onToggle, onCreateCollection }: Props = $props();
+	let {
+		collections,
+		sharedCollections = [],
+		favoriteSnippets = [],
+		collapsed = false,
+		onToggle,
+		onCreateCollection
+	}: Props = $props();
 
 	const isActive = (path: string) => $page.url.pathname === path;
 	const isCollectionActive = (id: string) => $page.url.pathname === `/collections/${id}`;
+	const isSnippetActive = (id: string) => $page.url.pathname === `/snippets/${id}`;
 </script>
 
 <aside
-	class="h-full border-r border-border bg-surface flex flex-col transition-all duration-200 {collapsed
-		? 'w-10'
-		: 'w-56'}"
+	class="h-full border-r border-border bg-surface flex flex-col transition-all duration-150 {collapsed
+		? 'w-9'
+		: 'w-52'}"
 >
 	<!-- Logo -->
-	<div class="h-10 flex items-center justify-between px-2 border-b border-border shrink-0">
+	<div class="h-9 flex items-center justify-between px-1.5 border-b border-border shrink-0">
 		{#if !collapsed}
-			<a href="/dashboard" class="font-semibold text-foreground text-xs tracking-tight"
-				>SnippetVault</a
-			>
+			<a href="/dashboard" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+				<img src="/images/logo.png" alt="SnippetVault" class="h-5 w-auto" />
+				<span class="font-semibold text-foreground text-[11px] tracking-tight">SnippetVault</span>
+			</a>
+		{:else}
+			<a href="/dashboard" class="hover:opacity-80 transition-opacity">
+				<img src="/images/logo.png" alt="SnippetVault" class="h-5 w-auto" />
+			</a>
 		{/if}
-		<button
-			onclick={onToggle}
-			class="p-1 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
-			title={collapsed ? 'Expand' : 'Collapse'}
-		>
-			{#if collapsed}
-				<ChevronRight size={14} />
-			{:else}
-				<ChevronLeft size={14} />
-			{/if}
-		</button>
+		{#if !collapsed}
+			<button
+				onclick={onToggle}
+				class="p-0.5 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
+				title="Collapse"
+			>
+				<ChevronLeft size={12} />
+			</button>
+		{/if}
 	</div>
 
 	<!-- Navigation -->
-	<nav class="flex-1 overflow-y-auto py-1">
+	<nav class="flex-1 overflow-y-auto py-0.5">
 		{#if !collapsed}
 			<!-- Quick links -->
-			<div class="px-1 mb-1">
+			<div class="px-0.5">
 				<a
 					href="/dashboard"
-					class="flex items-center gap-1.5 px-1.5 py-1 rounded text-xs {isActive('/dashboard')
+					class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] {isActive('/dashboard')
 						? 'bg-accent/10 text-accent'
-						: 'text-muted hover:text-foreground hover:bg-background'} transition-colors"
+						: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors"
 				>
-					<LayoutDashboard size={14} />
+					<LayoutDashboard size={14} strokeWidth={1.5} />
 					<span>Snippets</span>
 				</a>
 				<a
 					href="/search"
-					class="flex items-center gap-1.5 px-1.5 py-1 rounded text-xs text-muted hover:text-foreground hover:bg-background transition-colors"
+					class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] text-muted hover:text-foreground hover:bg-background/70 transition-colors"
 				>
-					<Search size={14} />
+					<Search size={14} strokeWidth={1.5} />
 					<span>Recherche</span>
 				</a>
 			</div>
 
+			<!-- Favorites section -->
+			{#if favoriteSnippets.length > 0}
+				<div class="mt-1 pt-1 border-t border-border/40">
+					<div class="px-1.5 py-1">
+						<span class="text-[9px] text-muted/60 tracking-wide flex items-center gap-1">
+							<Star size={9} class="fill-yellow-500 text-yellow-500" />
+							Favoris
+						</span>
+					</div>
+					<div class="px-0.5">
+						{#each favoriteSnippets as snippet (snippet.id)}
+							<a
+								href="/snippets/{snippet.id}"
+								class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] {isSnippetActive(snippet.id)
+									? 'bg-accent/10 text-accent'
+									: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors"
+							>
+								<Star size={12} strokeWidth={1.5} class="shrink-0 text-yellow-500 fill-yellow-500" />
+								<span class="truncate">{snippet.title}</span>
+							</a>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
 			<!-- Collections header -->
-			<div class="px-2 py-1 flex items-center justify-between">
-				<span class="text-[10px] font-medium text-muted uppercase tracking-wider">Collections</span
-				>
+			<div class="px-1.5 py-1 mt-1 flex items-center justify-between">
+				<span class="text-[9px] text-muted/60 tracking-wide">Collections</span>
 				<button
 					onclick={onCreateCollection}
 					class="p-0.5 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
 					title="Nouvelle collection"
 				>
-					<FolderPlus size={12} />
+					<FolderPlus size={11} strokeWidth={1.5} />
 				</button>
 			</div>
 
 			<!-- Collections tree -->
-			<div class="px-1">
+			<div class="px-0.5">
 				{#if collections.length === 0}
-					<p class="px-1.5 py-2 text-[10px] text-muted text-center">Aucune collection</p>
+					<p class="px-1.5 py-1.5 text-[10px] text-muted italic">Aucune collection</p>
 				{:else}
 					<CollectionTree {collections} {isCollectionActive} />
 				{/if}
 			</div>
+
+			<!-- Shared collections -->
+			{#if sharedCollections.length > 0}
+				<div class="mt-2 pt-1 border-t border-border/40">
+					<div class="px-1.5 py-1">
+						<span class="text-[9px] text-muted/60 tracking-wide">Partagees</span>
+					</div>
+					<div class="px-0.5">
+						{#each sharedCollections as collection (collection.id)}
+							<a
+								href="/collections/{collection.id}"
+								class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] {isCollectionActive(
+									collection.id
+								)
+									? 'bg-accent/10 text-accent'
+									: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors group"
+								title="{collection.ownerName} - {collection.permission === 'read'
+									? 'Lecture seule'
+									: 'Lecture/Ecriture'}"
+							>
+								{#if collection.icon}
+									<span class="text-[11px]">{collection.icon}</span>
+								{:else}
+									<Users size={14} strokeWidth={1.5} class="shrink-0" />
+								{/if}
+								<span class="truncate flex-1">{collection.name}</span>
+								{#if collection.permission === 'read'}
+									<Eye size={10} class="text-muted/40 shrink-0" />
+								{/if}
+							</a>
+						{/each}
+					</div>
+				</div>
+			{/if}
 		{:else}
 			<!-- Collapsed state - icons only -->
-			<div class="flex flex-col items-center gap-0.5 px-1">
+			<div class="flex flex-col items-center gap-0.5 px-0.5 pt-0.5">
 				<a
 					href="/dashboard"
 					class="p-1.5 rounded {isActive('/dashboard')
 						? 'bg-accent/10 text-accent'
-						: 'text-muted hover:text-foreground hover:bg-background'} transition-colors"
+						: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors"
 					title="Snippets"
 				>
-					<LayoutDashboard size={16} />
+					<LayoutDashboard size={15} strokeWidth={1.5} />
 				</a>
 				<a
 					href="/search"
-					class="p-1.5 rounded text-muted hover:text-foreground hover:bg-background transition-colors"
+					class="p-1.5 rounded text-muted hover:text-foreground hover:bg-background/70 transition-colors"
 					title="Recherche"
 				>
-					<Search size={16} />
+					<Search size={15} strokeWidth={1.5} />
 				</a>
+				{#if favoriteSnippets.length > 0}
+					<div class="w-5 h-px bg-border/40 my-0.5"></div>
+					<span class="p-1.5 text-yellow-500" title="Favoris ({favoriteSnippets.length})">
+						<Star size={15} strokeWidth={1.5} class="fill-yellow-500" />
+					</span>
+				{/if}
+				<div class="w-5 h-px bg-border/40 my-0.5"></div>
 				<button
 					onclick={onCreateCollection}
-					class="p-1.5 rounded text-muted hover:text-foreground hover:bg-background transition-colors"
+					class="p-1.5 rounded text-muted hover:text-foreground hover:bg-background/70 transition-colors"
 					title="Nouvelle collection"
 				>
-					<FolderPlus size={16} />
+					<FolderPlus size={15} strokeWidth={1.5} />
+				</button>
+				{#if sharedCollections.length > 0}
+					<div class="w-5 h-px bg-border/40 my-0.5"></div>
+					<span class="p-1.5 text-muted" title="Collections partagees">
+						<Users size={15} strokeWidth={1.5} />
+					</span>
+				{/if}
+			</div>
+			<!-- Expand button at bottom -->
+			<div class="mt-auto pb-1 flex justify-center">
+				<button
+					onclick={onToggle}
+					class="p-1 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
+					title="Expand"
+				>
+					<ChevronRight size={12} />
 				</button>
 			</div>
 		{/if}
@@ -125,13 +235,13 @@
 
 	<!-- Settings -->
 	{#if !collapsed}
-		<div class="px-1 py-1 border-t border-border">
+		<div class="px-0.5 py-0.5 border-t border-border/40">
 			<a
 				href="/settings"
-				class="flex items-center gap-1.5 px-1.5 py-1 rounded text-xs text-muted hover:text-foreground hover:bg-background transition-colors"
+				class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] text-muted hover:text-foreground hover:bg-background/70 transition-colors"
 			>
-				<Settings size={14} />
-				<span>Paramètres</span>
+				<Settings size={14} strokeWidth={1.5} />
+				<span>Parametres</span>
 			</a>
 		</div>
 	{/if}

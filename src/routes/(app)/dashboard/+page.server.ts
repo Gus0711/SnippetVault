@@ -28,12 +28,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Get all snippet_tags relations
 	const allSnippetTagsRelations = await db.select().from(snippetTags).all();
 
-	// Get all blocks to extract languages
+	// Get all blocks to extract languages and content for search
 	const allBlocks = await db.select().from(snippetBlocks).all();
 	const snippetLanguages = new Map<string, string>();
+	const snippetContents = new Map<string, string>();
 	for (const block of allBlocks) {
 		if (block.type === 'code' && block.language && !snippetLanguages.has(block.snippetId)) {
 			snippetLanguages.set(block.snippetId, block.language);
+		}
+		// Accumulate content for search
+		if (block.content) {
+			const existing = snippetContents.get(block.snippetId) || '';
+			snippetContents.set(block.snippetId, existing + ' ' + block.content);
 		}
 	}
 
@@ -47,7 +53,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			...snippet,
 			collection: snippet.collectionId ? collectionsMap.get(snippet.collectionId) || null : null,
 			tags: snippetTagIds.map((tagId) => tagsMap.get(tagId)).filter(Boolean),
-			language: snippetLanguages.get(snippet.id) || null
+			language: snippetLanguages.get(snippet.id) || null,
+			searchContent: snippetContents.get(snippet.id) || ''
 		};
 	});
 
@@ -59,6 +66,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		snippets: snippetsWithRelations,
 		tags: allTags,
+		collections: allCollections,
 		stats: {
 			total: totalSnippets,
 			published: publishedCount,
