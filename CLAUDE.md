@@ -8,7 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Notion-style organization (hierarchical collections, tags, full-text search)
 - Carbon-style code rendering (beautiful syntax highlighting via Shiki)
 - Block-based editor (markdown, code, images, files) using TipTap
-- Public sharing with unique links
+- Public sharing with unique links + embeddable iframe
+- Multi-selection with bulk actions (move, tag, delete, export)
+- Export to Markdown/ZIP (individual or bulk)
 - REST API for AI integration
 
 Full specification: `SnippetVault_Specification.md`
@@ -24,6 +26,7 @@ Full specification: `SnippetVault_Specification.md`
 | UI | Tailwind CSS + shadcn-svelte |
 | Editor | TipTap (block-based) |
 | Syntax highlighting | Shiki |
+| ZIP export | archiver |
 | Deployment | Docker (single container) |
 
 ## Commands
@@ -71,8 +74,11 @@ snippetvault/
 │   │   └── utils/           # Helpers
 │   ├── routes/
 │   │   ├── (app)/           # Authenticated routes
-│   │   ├── (public)/        # Public routes (s/[id], embed)
+│   │   ├── (public)/        # Public routes (s/[id], embed/[id])
 │   │   ├── api/             # REST API
+│   │   │   ├── snippets/    # CRUD + export
+│   │   │   ├── export/      # Bulk export
+│   │   │   └── user/        # User settings, tags
 │   │   └── auth/            # Login, register, invite
 │   └── app.html
 ├── static/
@@ -245,6 +251,88 @@ Type `/` in the editor to access:
 - `/bullet`, `/numbered` - Lists
 - `/quote` - Blockquote
 
+### Block Movement
+Blocks can be reordered in two ways:
+- **Keyboard**: `Alt + ↑` / `Alt + ↓` to move the current block up/down
+- **Mouse**: Hover over a block to reveal ↑/↓ buttons on the left side
+
+The implementation uses ProseMirror transactions to swap adjacent block nodes while preserving content and formatting.
+
+## Multi-Selection & Bulk Actions
+
+The `SnippetTable` component (`src/lib/components/SnippetTable.svelte`) supports multi-selection for batch operations.
+
+### Selection
+- Checkbox on each row to select individual snippets
+- "Select all" checkbox in header (affects filtered results)
+- Selection state managed with `Set<string>` for snippet IDs
+
+### Bulk Actions Bar
+When snippets are selected, a floating action bar appears with:
+- **Move**: Move selected snippets to another collection
+- **Tag**: Add tags to selected snippets (including creating new tags)
+- **Export**: Download selected snippets as a ZIP archive
+- **Delete**: Delete all selected snippets (with confirmation)
+
+### API Endpoints
+- `PATCH /api/snippets/[id]` - Update snippet (collectionId, addTagId)
+- `POST /api/user/tags` - Create new tag (returns existing if duplicate)
+- `GET /api/export/snippets?ids=id1,id2,id3` - Bulk export to ZIP
+
+## Embed & Export
+
+### Embed (iframe)
+Published snippets can be embedded in external sites via iframe.
+
+- **Route**: `/embed/[publicId]` - Minimal embed view
+- **Features**:
+  - Compact header with title and link to full view
+  - Code blocks with copy button
+  - Syntax highlighting via Shiki
+  - Dark theme optimized for embedding
+- **Usage**: On snippet page, click "Embed" to get iframe code with adjustable height
+
+### Export
+Snippets can be exported individually or in bulk.
+
+#### Individual Export
+- **Route**: `GET /api/snippets/[id]/export?format=md|zip`
+- **Markdown (.md)**: YAML frontmatter + content blocks
+- **ZIP (.zip)**: Markdown file + attached files in `files/` folder
+
+#### Bulk Export
+- **Route**: `GET /api/export/snippets?ids=id1,id2,id3`
+- **Output**: ZIP archive with:
+  - `INDEX.md` - Table of contents with links
+  - `{snippet-title}/` - Folder per snippet
+    - `{snippet-title}.md` - Markdown export
+    - `files/` - Attached images and files
+
+#### Markdown Format
+```markdown
+---
+title: "Snippet Title"
+collection: "Collection Name"
+tags: ["tag1", "tag2"]
+status: published
+created: 2024-01-15T10:30:00.000Z
+updated: 2024-01-15T10:30:00.000Z
+publicId: abc123
+---
+
+# Snippet Title
+
+Markdown content here...
+
+```javascript
+// Code blocks with language
+console.log('hello');
+```
+
+![image](files/screenshot.png)
+[document](files/readme.pdf)
+```
+
 ## Svelte 5 Runes
 
 **Important**: Files using Svelte 5 runes (`$state`, `$derived`, `$effect`) must use the `.svelte.ts` extension, not `.ts`.
@@ -289,3 +377,4 @@ When uncertain about syntax, API, or behavior, consult official documentation:
 - Shiki: `/shikijs/shiki`
 - Lucide icons: `/lucide-icons/lucide`
 - lowlight: `/wooorm/lowlight` (for TipTap code blocks)
+- archiver: `/archiverjs/node-archiver` (for ZIP export)
