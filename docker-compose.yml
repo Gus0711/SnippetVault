@@ -12,3 +12,14 @@ services:
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - ORIGIN=${ORIGIN:-http://localhost:3000}
     restart: unless-stopped
+
+  mcp-server:
+    build: ./mcp-server
+    ports:
+      - "3002:3002"
+    environment:
+      - SNIPPETVAULT_URL=http://snippetvault:3000
+      - PORT=3002
+    depends_on:
+      - snippetvault
+    restart: unless-stopped

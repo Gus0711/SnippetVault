@@ -1,0 +1,36 @@
+{
+  "name": "@snippetvault/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for SnippetVault - Connect AI assistants to your code snippets",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "snippetvault-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "snippetvault",
+    "code-snippets",
+    "ai-integration",
+    "claude"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
