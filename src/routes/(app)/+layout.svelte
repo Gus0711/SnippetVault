@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -38,6 +37,18 @@
 
 	const closeUserMenu = () => {
 		userMenuOpen = false;
+	};
+
+	const handleLogout = async () => {
+		try {
+			await fetch('/api/auth/logout', {
+				method: 'POST'
+			});
+		} catch (e) {
+			// Ignore errors
+		}
+		// Force full page reload to login
+		window.location.href = '/auth/login';
 	};
 </script>
 
@@ -94,15 +105,13 @@
 							<Settings size={11} strokeWidth={1.5} />
 							Parametres
 						</a>
-						<form method="POST" action="/auth/logout" use:enhance>
-							<button
-								type="submit"
-								class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors w-full text-left"
-							>
-								<LogOut size={11} strokeWidth={1.5} />
-								Deconnexion
-							</button>
-						</form>
+						<button
+							onclick={handleLogout}
+							class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors w-full text-left"
+						>
+							<LogOut size={11} strokeWidth={1.5} />
+							Deconnexion
+						</button>
 					</div>
 				{/if}
 			</div>

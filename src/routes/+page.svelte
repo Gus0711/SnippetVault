@@ -1013,6 +1013,23 @@ docker compose up -d
 								{t.license}
 							</a>
 						</li>
+						<li class="pt-4 border-t border-border mt-4">
+							{#if data.user}
+								<a
+									href="/dashboard"
+									class="text-muted hover:text-foreground transition-colors"
+								>
+									{lang === 'fr' ? 'Mon Dashboard' : 'My Dashboard'}
+								</a>
+							{:else}
+								<a
+									href="/auth/login"
+									class="text-muted hover:text-foreground transition-colors"
+								>
+									{lang === 'fr' ? 'Connexion Admin' : 'Admin Login'}
+								</a>
+							{/if}
+						</li>
 					</ul>
 				</div>
 			</div>
