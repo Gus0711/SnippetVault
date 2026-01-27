@@ -1,6 +1,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install build dependencies for native modules (better-sqlite3)
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 RUN npm ci
 
@@ -17,6 +20,9 @@ RUN apk add --no-cache sqlite
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
+
+# Copy scripts for admin tasks
+COPY --from=builder /app/scripts ./scripts
 
 # Copy schema and entrypoint
 COPY src/lib/server/db/schema.sql ./schema.sql
