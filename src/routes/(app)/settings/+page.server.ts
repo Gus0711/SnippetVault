@@ -449,20 +449,35 @@ export const actions: Actions = {
 
 		try {
 			// Verify the token works by making a test API call
-			const testResponse = await fetch('https://api.github.com/user', {
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Accept': 'application/vnd.github+json',
-					'X-GitHub-Api-Version': '2022-11-28'
-				}
-			});
+			let testResponse;
+			try {
+				testResponse = await fetch('https://api.github.com/user', {
+					headers: {
+						'Authorization': `Bearer ${token}`,
+						'Accept': 'application/vnd.github+json',
+						'X-GitHub-Api-Version': '2022-11-28'
+					}
+				});
+			} catch (fetchError) {
+				console.error('GitHub API fetch error:', fetchError);
+				return fail(500, { githubError: 'Impossible de contacter l\'API GitHub' });
+			}
 
 			if (!testResponse.ok) {
+				const errorBody = await testResponse.text().catch(() => '');
+				console.error('GitHub API error:', testResponse.status, errorBody);
 				return fail(400, { githubError: 'Token invalide ou expire' });
 			}
 
 			// Encrypt and save the token
-			const encryptedToken = encrypt(token);
+			let encryptedToken;
+			try {
+				encryptedToken = encrypt(token);
+			} catch (encryptError) {
+				console.error('Encryption error:', encryptError);
+				return fail(500, { githubError: 'Erreur de chiffrement du token' });
+			}
+
 			await db
 				.update(users)
 				.set({
@@ -474,7 +489,7 @@ export const actions: Actions = {
 			return { githubSuccess: true };
 		} catch (error) {
 			console.error('Error saving GitHub token:', error);
-			return fail(500, { githubError: 'Erreur lors de la sauvegarde du token' });
+			return fail(500, { githubError: 'Erreur lors de la sauvegarde en base de donnees' });
 		}
 	},
 
