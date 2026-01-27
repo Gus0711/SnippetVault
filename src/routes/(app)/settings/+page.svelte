@@ -16,7 +16,8 @@
 		Link,
 		Tag,
 		Plus,
-		Pencil
+		Pencil,
+		Lock
 	} from 'lucide-svelte';
 	import { tagColors, getRandomTagColor } from '$lib/utils/colors';
 
@@ -52,6 +53,8 @@
 			success?: boolean;
 			apiKey?: string;
 			error?: string;
+			passwordError?: string;
+			passwordSuccess?: boolean;
 			invitationError?: string;
 			invitationSuccess?: boolean;
 			revokeSuccess?: boolean;
@@ -71,6 +74,12 @@
 	let isRegenerating = $state(false);
 	let isExporting = $state(false);
 	let exportError = $state<string | null>(null);
+
+	// Password change states
+	let currentPassword = $state('');
+	let newPassword = $state('');
+	let confirmPassword = $state('');
+	let isChangingPassword = $state(false);
 
 	// Admin states
 	let showInviteModal = $state(false);
@@ -95,6 +104,15 @@
 	$effect(() => {
 		if (form?.success && form?.apiKey) {
 			apiKey = form.apiKey;
+		}
+	});
+
+	// Reset password form on success
+	$effect(() => {
+		if (form?.passwordSuccess) {
+			currentPassword = '';
+			newPassword = '';
+			confirmPassword = '';
 		}
 	});
 
@@ -321,6 +339,102 @@
 		{#if form?.success}
 			<p class="text-sm text-green-500 mt-4">Cle API regeneree avec succes.</p>
 		{/if}
+	</section>
+
+	<!-- Security Section -->
+	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
+		<div class="flex items-center gap-3 mb-4">
+			<Lock size={20} class="text-muted" />
+			<h2 class="text-lg font-medium text-foreground">Securite</h2>
+		</div>
+
+		<p class="text-sm text-muted mb-4">
+			Modifiez votre mot de passe. Le nouveau mot de passe doit contenir au moins 8 caracteres.
+		</p>
+
+		<form
+			method="POST"
+			action="?/changePassword"
+			use:enhance={() => {
+				isChangingPassword = true;
+				return async ({ update }) => {
+					await update();
+					isChangingPassword = false;
+				};
+			}}
+			class="space-y-4 max-w-sm"
+		>
+			<div>
+				<label for="currentPassword" class="block text-sm font-medium text-foreground mb-1">
+					Mot de passe actuel
+				</label>
+				<input
+					type="password"
+					id="currentPassword"
+					name="currentPassword"
+					bind:value={currentPassword}
+					required
+					autocomplete="current-password"
+					class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground
+						   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+				/>
+			</div>
+
+			<div>
+				<label for="newPassword" class="block text-sm font-medium text-foreground mb-1">
+					Nouveau mot de passe
+				</label>
+				<input
+					type="password"
+					id="newPassword"
+					name="newPassword"
+					bind:value={newPassword}
+					required
+					minlength="8"
+					autocomplete="new-password"
+					class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground
+						   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+				/>
+			</div>
+
+			<div>
+				<label for="confirmPassword" class="block text-sm font-medium text-foreground mb-1">
+					Confirmer le nouveau mot de passe
+				</label>
+				<input
+					type="password"
+					id="confirmPassword"
+					name="confirmPassword"
+					bind:value={confirmPassword}
+					required
+					minlength="8"
+					autocomplete="new-password"
+					class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground
+						   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+				/>
+			</div>
+
+			{#if form?.passwordError}
+				<p class="text-sm text-red-500">{form.passwordError}</p>
+			{/if}
+
+			{#if form?.passwordSuccess}
+				<p class="text-sm text-green-500">Mot de passe modifie avec succes.</p>
+			{/if}
+
+			<button
+				type="submit"
+				disabled={isChangingPassword}
+				class="px-4 py-2 bg-accent text-white text-sm font-medium rounded hover:bg-accent/90 transition-colors disabled:opacity-50"
+			>
+				{#if isChangingPassword}
+					<RefreshCw size={14} class="inline animate-spin mr-1" />
+					Modification...
+				{:else}
+					Changer le mot de passe
+				{/if}
+			</button>
+		</form>
 	</section>
 
 	<!-- Export Section -->

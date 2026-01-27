@@ -3,9 +3,13 @@ import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db, sessions, users, type User, type Session } from '../db';
 import { eq } from 'drizzle-orm';
 import type { RequestEvent } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 export const SESSION_COOKIE_NAME = 'session';
+
+// Detect if we're running over HTTPS based on ORIGIN
+const isSecure = env.ORIGIN?.startsWith('https') ?? false;
 
 export function generateSessionToken(): string {
 	const bytes = crypto.getRandomValues(new Uint8Array(20));
@@ -79,7 +83,7 @@ export function setSessionCookie(event: RequestEvent, token: string, expiresAt: 
 	event.cookies.set(SESSION_COOKIE_NAME, token, {
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: true,
+		secure: isSecure,
 		expires: expiresAt,
 		path: '/'
 	});
@@ -89,7 +93,7 @@ export function deleteSessionCookie(event: RequestEvent): void {
 	event.cookies.set(SESSION_COOKIE_NAME, '', {
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: true,
+		secure: isSecure,
 		maxAge: 0,
 		path: '/'
 	});

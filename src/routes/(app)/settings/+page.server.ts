@@ -2,6 +2,8 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db, users, invitations, tags, snippetTags } from '$lib/server/db';
 import { eq, isNull, gt, and, sql } from 'drizzle-orm';
+import { verifyPassword, hashPassword } from '$lib/server/auth/password';
+import { invalidateAllUserSessions } from '$lib/server/auth';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -113,6 +115,65 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
+	changePassword: async ({ locals, request }) => {
+		if (!locals.user) {
+			return fail(401, { passwordError: 'Non authentifie' });
+		}
+
+		const formData = await request.formData();
+		const currentPassword = formData.get('currentPassword')?.toString();
+		const newPassword = formData.get('newPassword')?.toString();
+		const confirmPassword = formData.get('confirmPassword')?.toString();
+
+		if (!currentPassword || !newPassword || !confirmPassword) {
+			return fail(400, { passwordError: 'Tous les champs sont requis' });
+		}
+
+		if (newPassword.length < 8) {
+			return fail(400, { passwordError: 'Le nouveau mot de passe doit contenir au moins 8 caracteres' });
+		}
+
+		if (newPassword !== confirmPassword) {
+			return fail(400, { passwordError: 'Les mots de passe ne correspondent pas' });
+		}
+
+		// Get user with password hash
+		const user = await db
+			.select()
+			.from(users)
+			.where(eq(users.id, locals.user.id))
+			.get();
+
+		if (!user) {
+			return fail(404, { passwordError: 'Utilisateur non trouve' });
+		}
+
+		// Verify current password
+		if (!verifyPassword(currentPassword, user.passwordHash)) {
+			return fail(400, { passwordError: 'Mot de passe actuel incorrect' });
+		}
+
+		try {
+			// Update password
+			const newPasswordHash = hashPassword(newPassword);
+			await db
+				.update(users)
+				.set({
+					passwordHash: newPasswordHash,
+					updatedAt: new Date()
+				})
+				.where(eq(users.id, locals.user.id));
+
+			// Optionally invalidate all other sessions (keep current one)
+			// await invalidateAllUserSessions(locals.user.id);
+
+			return { passwordSuccess: true };
+		} catch (error) {
+			console.error('Error changing password:', error);
+			return fail(500, { passwordError: 'Erreur lors du changement de mot de passe' });
+		}
+	},
+
 	regenerateApiKey: async ({ locals }) => {
 		if (!locals.user) {
 			return fail(401, { error: 'Non authentifie' });
