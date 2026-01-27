@@ -12,6 +12,7 @@ export const users = sqliteTable('users', {
 	themePreference: text('theme_preference', { enum: ['light', 'dark', 'system'] })
 		.notNull()
 		.default('system'),
+	githubToken: text('github_token'), // Encrypted GitHub PAT for Gist export
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),
@@ -87,6 +88,8 @@ export const snippets = sqliteTable('snippets', {
 	publicShowAttachments: integer('public_show_attachments', { mode: 'boolean' })
 		.notNull()
 		.default(true),
+	gistId: text('gist_id'), // GitHub Gist ID if exported
+	gistUrl: text('gist_url'), // GitHub Gist URL
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),

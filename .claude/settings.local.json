@@ -39,7 +39,10 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:www.freecodecamp.org)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm run db:generate:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(node scripts/apply-migration.js:*)"
     ]
   }
 }

@@ -17,7 +17,9 @@
 		Tag,
 		Plus,
 		Pencil,
-		Lock
+		Lock,
+		Github,
+		ExternalLink
 	} from 'lucide-svelte';
 	import { tagColors, getRandomTagColor } from '$lib/utils/colors';
 
@@ -48,6 +50,7 @@
 			}>;
 			currentUserId: string;
 			tags: TagData[];
+			hasGithubToken: boolean;
 		};
 		form: {
 			success?: boolean;
@@ -63,6 +66,9 @@
 			tagError?: string;
 			tagSuccess?: boolean;
 			tagDeleteSuccess?: boolean;
+			githubError?: string;
+			githubSuccess?: boolean;
+			githubRemoveSuccess?: boolean;
 		} | null;
 	}
 
@@ -99,6 +105,12 @@
 	let newTagColor = $state(getRandomTagColor());
 	let editingTag = $state<TagData | null>(null);
 	let tagToDelete = $state<TagData | null>(null);
+
+	// GitHub integration states
+	let githubToken = $state('');
+	let isSavingGithubToken = $state(false);
+	let showRemoveGithubConfirm = $state(false);
+	let hasGithubToken = $state(data.hasGithubToken);
 
 	// Update apiKey when form returns a new one
 	$effect(() => {
@@ -140,6 +152,14 @@
 		if (form?.tagDeleteSuccess) {
 			showDeleteTagModal = false;
 			tagToDelete = null;
+		}
+		if (form?.githubSuccess) {
+			githubToken = '';
+			hasGithubToken = true;
+		}
+		if (form?.githubRemoveSuccess) {
+			hasGithubToken = false;
+			showRemoveGithubConfirm = false;
 		}
 	});
 
@@ -435,6 +455,123 @@
 				{/if}
 			</button>
 		</form>
+	</section>
+
+	<!-- GitHub Integration Section -->
+	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
+		<div class="flex items-center gap-3 mb-4">
+			<Github size={20} class="text-muted" />
+			<h2 class="text-lg font-medium text-foreground">Integrations</h2>
+		</div>
+
+		<p class="text-sm text-muted mb-4">
+			Connectez votre compte GitHub pour exporter vos snippets vers GitHub Gist.
+		</p>
+
+		{#if hasGithubToken}
+			<div class="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-lg mb-4">
+				<div class="flex items-center gap-3">
+					<Check size={20} class="text-green-500" />
+					<div>
+						<p class="text-sm font-medium text-foreground">GitHub connecte</p>
+						<p class="text-xs text-muted">Vous pouvez exporter vos snippets vers GitHub Gist</p>
+					</div>
+				</div>
+				{#if showRemoveGithubConfirm}
+					<div class="flex items-center gap-2">
+						<span class="text-xs text-muted">Confirmer ?</span>
+						<form method="POST" action="?/removeGithubToken" use:enhance>
+							<button
+								type="submit"
+								class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+							>
+								Supprimer
+							</button>
+						</form>
+						<button
+							type="button"
+							onclick={() => (showRemoveGithubConfirm = false)}
+							class="px-2 py-1 text-xs text-muted hover:text-foreground transition-colors"
+						>
+							Annuler
+						</button>
+					</div>
+				{:else}
+					<button
+						type="button"
+						onclick={() => (showRemoveGithubConfirm = true)}
+						class="flex items-center gap-1 px-3 py-1.5 text-sm text-red-500 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors"
+					>
+						<Trash2 size={14} />
+						Deconnecter
+					</button>
+				{/if}
+			</div>
+		{:else}
+			<form
+				method="POST"
+				action="?/saveGithubToken"
+				use:enhance={() => {
+					isSavingGithubToken = true;
+					return async ({ update }) => {
+						await update();
+						isSavingGithubToken = false;
+					};
+				}}
+				class="space-y-4"
+			>
+				<div>
+					<label for="githubToken" class="block text-sm font-medium text-foreground mb-1">
+						GitHub Personal Access Token
+					</label>
+					<input
+						type="password"
+						id="githubToken"
+						name="githubToken"
+						bind:value={githubToken}
+						required
+						placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+						class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground
+							   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent font-mono text-sm"
+					/>
+					<p class="text-xs text-muted mt-1">
+						Le token doit avoir le scope <code class="bg-surface px-1 rounded">gist</code>
+					</p>
+				</div>
+
+				<div class="flex items-center gap-4">
+					<button
+						type="submit"
+						disabled={isSavingGithubToken || !githubToken}
+						class="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded hover:bg-accent/90 transition-colors disabled:opacity-50"
+					>
+						{#if isSavingGithubToken}
+							<RefreshCw size={14} class="animate-spin" />
+							Verification...
+						{:else}
+							<Github size={14} />
+							Connecter GitHub
+						{/if}
+					</button>
+					<a
+						href="https://github.com/settings/tokens/new?scopes=gist&description=SnippetVault"
+						target="_blank"
+						class="flex items-center gap-1 text-sm text-accent hover:underline"
+					>
+						<ExternalLink size={14} />
+						Creer un token
+					</a>
+				</div>
+			</form>
+		{/if}
+
+		{#if form?.githubError}
+			<p class="text-sm text-red-500 mt-4">{form.githubError}</p>
+		{/if}
+
+		{#if form?.githubSuccess}
+			<p class="text-sm text-green-500 mt-4">Token GitHub enregistre avec succes.</p>
+		{/if}
 	</section>
 
 	<!-- Export Section -->

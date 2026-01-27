@@ -22,15 +22,15 @@
 	}: Props = $props();
 
 	let isExpanded = $state(false);
-	let showLineNumbers = $state(false);
+	let showLineNumbers = $state(true);
 
 	const lines = $derived(content.split('\n'));
 	const totalLines = $derived(lines.length);
 	const shouldCollapse = $derived(totalLines > threshold);
 	const hiddenLines = $derived(totalLines - previewLines);
 
-	// Calculate height based on line count (approximate line height 1.6em + padding)
-	const collapsedHeight = $derived(`calc(1.6em * ${previewLines} + 2rem)`);
+	// Calculate height based on line count (approximate line height 1.7em + padding)
+	const collapsedHeight = $derived(`calc(1.7em * ${previewLines} + 2.5rem)`);
 
 	const toggle = () => {
 		isExpanded = !isExpanded;
@@ -198,8 +198,8 @@
 
 	.line-number {
 		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-		font-size: 0.875rem;
-		line-height: 1.6;
+		font-size: 0.9375rem;
+		line-height: 1.7;
 		color: var(--tx-muted);
 		opacity: 0.5;
 	}
@@ -230,11 +230,11 @@
 
 	.rendered-code :global(pre) {
 		margin: 0;
-		padding: 1rem;
+		padding: 1.25rem;
 		overflow-x: auto;
 		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-		font-size: 0.875rem;
-		line-height: 1.6;
+		font-size: 0.9375rem;
+		line-height: 1.7;
 	}
 
 	.rendered-code :global(pre code) {
@@ -244,10 +244,10 @@
 
 	.fallback-code {
 		margin: 0;
-		padding: 0.75rem;
+		padding: 1.25rem;
 		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-		font-size: 0.6875rem;
-		line-height: 1.6;
+		font-size: 0.9375rem;
+		line-height: 1.7;
 		white-space: pre-wrap;
 		word-break: break-word;
 		color: var(--tx);
@@ -268,7 +268,7 @@
 		border: none;
 		border-top: 1px solid var(--bd);
 		color: var(--tx-muted);
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		cursor: pointer;
 		transition: all 0.15s ease;

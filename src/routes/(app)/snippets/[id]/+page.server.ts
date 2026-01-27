@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { db, snippets, snippetBlocks, snippetTags, tags, collections } from '$lib/server/db';
+import { db, snippets, snippetBlocks, snippetTags, tags, collections, users } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { createHighlighter } from 'shiki';
 import { marked } from 'marked';
@@ -121,6 +121,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			.get();
 	}
 
+	// Check if user has GitHub token configured
+	const user = await db.select().from(users).where(eq(users.id, locals.user.id)).get();
+	const hasGithubToken = !!user?.githubToken;
+
 	return {
 		snippet: {
 			...snippet,
@@ -128,6 +132,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			tags: snippetTagsList,
 			collection
 		},
-		permission: permission as Permission
+		permission: permission as Permission,
+		hasGithubToken
 	};
 };

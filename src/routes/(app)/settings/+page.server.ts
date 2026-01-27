@@ -4,6 +4,7 @@ import { db, users, invitations, tags, snippetTags } from '$lib/server/db';
 import { eq, isNull, gt, and, sql } from 'drizzle-orm';
 import { verifyPassword, hashPassword } from '$lib/server/auth/password';
 import { invalidateAllUserSessions } from '$lib/server/auth';
+import { encrypt } from '$lib/server/crypto';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -110,7 +111,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		pendingInvitations,
 		allUsers,
 		currentUserId: user.id,
-		tags: tagsWithUsage
+		tags: tagsWithUsage,
+		hasGithubToken: !!user.githubToken
 	};
 };
 
@@ -425,6 +427,75 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error('Error deleting tag:', error);
 			return fail(500, { tagError: 'Erreur lors de la suppression du tag' });
+		}
+	},
+
+	saveGithubToken: async ({ locals, request }) => {
+		if (!locals.user) {
+			return fail(401, { githubError: 'Non authentifie' });
+		}
+
+		const formData = await request.formData();
+		const token = formData.get('githubToken')?.toString().trim();
+
+		if (!token) {
+			return fail(400, { githubError: 'Token requis' });
+		}
+
+		// Validate token format (GitHub PAT starts with ghp_ or github_pat_)
+		if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+			return fail(400, { githubError: 'Format de token invalide. Le token doit commencer par ghp_ ou github_pat_' });
+		}
+
+		try {
+			// Verify the token works by making a test API call
+			const testResponse = await fetch('https://api.github.com/user', {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Accept': 'application/vnd.github+json',
+					'X-GitHub-Api-Version': '2022-11-28'
+				}
+			});
+
+			if (!testResponse.ok) {
+				return fail(400, { githubError: 'Token invalide ou expire' });
+			}
+
+			// Encrypt and save the token
+			const encryptedToken = encrypt(token);
+			await db
+				.update(users)
+				.set({
+					githubToken: encryptedToken,
+					updatedAt: new Date()
+				})
+				.where(eq(users.id, locals.user.id));
+
+			return { githubSuccess: true };
+		} catch (error) {
+			console.error('Error saving GitHub token:', error);
+			return fail(500, { githubError: 'Erreur lors de la sauvegarde du token' });
+		}
+	},
+
+	removeGithubToken: async ({ locals }) => {
+		if (!locals.user) {
+			return fail(401, { githubError: 'Non authentifie' });
+		}
+
+		try {
+			await db
+				.update(users)
+				.set({
+					githubToken: null,
+					updatedAt: new Date()
+				})
+				.where(eq(users.id, locals.user.id));
+
+			return { githubRemoveSuccess: true };
+		} catch (error) {
+			console.error('Error removing GitHub token:', error);
+			return fail(500, { githubError: 'Erreur lors de la suppression du token' });
 		}
 	}
 };

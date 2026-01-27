@@ -17,7 +17,9 @@
 		Download,
 		Code,
 		FileText,
-		FileArchive
+		FileArchive,
+		Github,
+		RefreshCw
 	} from 'lucide-svelte';
 	import CodeBlockCollapsible from '$lib/components/CodeBlockCollapsible.svelte';
 	import { JsonViewer } from '$lib/components/json-viewer';
@@ -211,6 +213,13 @@
 	let showExportMenu = $state(false);
 	let exporting = $state(false);
 
+	// Gist export
+	let exportingToGist = $state(false);
+	let gistError = $state<string | null>(null);
+	let gistUrl = $state<string | null>(data.snippet.gistUrl);
+	let showGistModal = $state(false);
+	let gistIsPublic = $state(false);
+
 	const exportSnippet = async (format: 'md' | 'zip') => {
 		exporting = true;
 		showExportMenu = false;
@@ -235,6 +244,37 @@
 			console.error('Export failed:', e);
 		} finally {
 			exporting = false;
+		}
+	};
+
+	const exportToGist = async () => {
+		exportingToGist = true;
+		gistError = null;
+		try {
+			const response = await fetch('/api/gist', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					snippetId: data.snippet.id,
+					isPublic: gistIsPublic
+				})
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				gistError = result.error || 'Erreur lors de l\'export';
+				return;
+			}
+
+			gistUrl = result.data.gistUrl;
+			showGistModal = false;
+			invalidateAll();
+		} catch (e) {
+			console.error('Gist export failed:', e);
+			gistError = 'Erreur lors de l\'export vers Gist';
+		} finally {
+			exportingToGist = false;
 		}
 	};
 </script>
@@ -393,7 +433,7 @@
 	{/if}
 
 	<!-- Export buttons -->
-	<div class="mb-3 flex items-center gap-1.5">
+	<div class="mb-3 flex items-center gap-1.5 flex-wrap">
 		<span class="text-[10px] text-muted">Export:</span>
 		<button
 			onclick={() => exportSnippet('md')}
@@ -411,6 +451,46 @@
 			<FileArchive size={10} />
 			.zip
 		</button>
+		{#if canWrite}
+			<span class="text-[10px] text-muted mx-1">|</span>
+			{#if gistUrl}
+				<a
+					href={gistUrl}
+					target="_blank"
+					class="flex items-center gap-1 px-2 py-0.5 text-[10px] bg-[#238636] text-white rounded hover:bg-[#2ea043] transition-colors"
+				>
+					<Github size={10} />
+					Voir le Gist
+					<ExternalLink size={8} />
+				</a>
+				<button
+					onclick={() => (showGistModal = true)}
+					disabled={exportingToGist}
+					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors disabled:opacity-50"
+					title="Mettre a jour le Gist"
+				>
+					<RefreshCw size={10} />
+				</button>
+			{:else if data.hasGithubToken}
+				<button
+					onclick={() => (showGistModal = true)}
+					disabled={exportingToGist}
+					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors disabled:opacity-50"
+				>
+					<Github size={10} />
+					Gist
+				</button>
+			{:else}
+				<a
+					href="/settings"
+					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors text-muted"
+					title="Configurez votre token GitHub dans les parametres"
+				>
+					<Github size={10} />
+					Gist
+				</a>
+			{/if}
+		{/if}
 	</div>
 
 	<!-- Tags -->
@@ -719,6 +799,76 @@
 					class="px-2.5 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors"
 				>
 					Fermer
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Gist Export Modal -->
+{#if showGistModal}
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-background border border-border rounded shadow-xl w-full max-w-sm">
+			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
+				<h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+					<Github size={16} />
+					{gistUrl ? 'Mettre a jour le Gist' : 'Exporter vers GitHub Gist'}
+				</h2>
+				<button
+					onclick={() => (showGistModal = false)}
+					class="p-0.5 text-muted hover:text-foreground rounded transition-colors"
+				>
+					<X size={14} />
+				</button>
+			</div>
+			<div class="p-3 space-y-3">
+				{#if !gistUrl}
+					<div>
+						<label class="flex items-center gap-2 cursor-pointer">
+							<input
+								type="checkbox"
+								bind:checked={gistIsPublic}
+								class="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent"
+							/>
+							<span class="text-[11px] text-foreground">Gist public</span>
+						</label>
+						<p class="text-[10px] text-muted mt-1 ml-5">
+							Les Gists secrets sont accessibles via URL mais ne sont pas indexés.
+						</p>
+					</div>
+				{/if}
+
+				<div class="p-2 bg-surface rounded text-[10px] text-muted">
+					<p class="font-medium text-foreground mb-1">Contenu du Gist:</p>
+					<ul class="list-disc list-inside space-y-0.5">
+						<li>README.md - Description et code formaté</li>
+						<li>Fichiers de code séparés par langage</li>
+					</ul>
+				</div>
+
+				{#if gistError}
+					<p class="text-[11px] text-red-500">{gistError}</p>
+				{/if}
+			</div>
+			<div class="flex justify-end gap-1.5 px-3 py-2 border-t border-border">
+				<button
+					onclick={() => (showGistModal = false)}
+					class="px-2.5 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors"
+				>
+					Annuler
+				</button>
+				<button
+					onclick={exportToGist}
+					disabled={exportingToGist}
+					class="flex items-center gap-1 px-2.5 py-1 text-[11px] bg-[#238636] text-white rounded hover:bg-[#2ea043] transition-colors disabled:opacity-50"
+				>
+					{#if exportingToGist}
+						<RefreshCw size={11} class="animate-spin" />
+						Export...
+					{:else}
+						<Github size={11} />
+						{gistUrl ? 'Mettre a jour' : 'Creer le Gist'}
+					{/if}
 				</button>
 			</div>
 		</div>
