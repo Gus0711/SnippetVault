@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, createHash } from 'crypto';
 import { env } from '$env/dynamic/private';
 
 const ALGORITHM = 'aes-256-gcm';
@@ -6,8 +6,7 @@ const ALGORITHM = 'aes-256-gcm';
 function getKey(): Buffer {
 	const secret = env.SECRET_KEY || 'change-me-in-production';
 	// Derive a 32-byte key from SECRET_KEY using simple hash
-	const crypto = require('crypto');
-	return crypto.createHash('sha256').update(secret).digest();
+	return createHash('sha256').update(secret).digest();
 }
 
 export function encrypt(text: string): string {
