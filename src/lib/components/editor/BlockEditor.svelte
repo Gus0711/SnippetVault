@@ -4,6 +4,9 @@
 	import StarterKit from '@tiptap/starter-kit';
 	import Placeholder from '@tiptap/extension-placeholder';
 	import Image from '@tiptap/extension-image';
+	import Link from '@tiptap/extension-link';
+	import TaskList from '@tiptap/extension-task-list';
+	import TaskItem from '@tiptap/extension-task-item';
 	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 	import { Table } from '@tiptap/extension-table';
 	import { TableRow } from '@tiptap/extension-table-row';
@@ -66,6 +69,10 @@
 		{ id: 'image', keywords: ['image', 'photo', 'picture', 'img'] },
 		{ id: 'file', keywords: ['file', 'fichier', 'attachment', 'upload', 'pdf', 'zip'] },
 		{ id: 'table', keywords: ['table', 'tableau', 'grid', 'grille'] },
+		{ id: 'divider', keywords: ['divider', 'separator', 'hr', 'ligne', 'separateur'] },
+		{ id: 'callout', keywords: ['callout', 'alert', 'note', 'warning', 'info', 'alerte'] },
+		{ id: 'todo', keywords: ['todo', 'task', 'tache', 'checkbox', 'checklist'] },
+		{ id: 'link', keywords: ['link', 'lien', 'url', 'href', 'http'] },
 		{ id: 'h1', keywords: ['heading', 'titre', 'h1', 'title'] },
 		{ id: 'h2', keywords: ['heading', 'titre', 'h2', 'subtitle'] },
 		{ id: 'h3', keywords: ['heading', 'titre', 'h3'] },
@@ -124,6 +131,20 @@
 
 	// Table menu state
 	let showTableMenu = $state(false);
+
+	// Callout menu state
+	let showCalloutMenu = $state(false);
+	const calloutTypes = [
+		{ id: 'info', label: 'Info', icon: 'ℹ️', color: '#3b82f6' },
+		{ id: 'warning', label: 'Attention', icon: '⚠️', color: '#f59e0b' },
+		{ id: 'success', label: 'Succes', icon: '✓', color: '#22c55e' },
+		{ id: 'error', label: 'Erreur', icon: '✕', color: '#ef4444' }
+	];
+
+	// Link prompt state
+	let showLinkPrompt = $state(false);
+	let linkUrl = $state('');
+	let linkText = $state('');
 
 	// Common programming languages
 	const languages = [
@@ -447,6 +468,72 @@
 		showLanguageSelector = false;
 	};
 
+	// Insert callout
+	const insertCallout = (type: string) => {
+		if (!editor) return;
+		const callout = calloutTypes.find(c => c.id === type);
+		if (!callout) return;
+
+		// Insert a blockquote with a special format
+		editor.chain().focus()
+			.setBlockquote()
+			.insertContent(`[!${type.toUpperCase()}] `)
+			.run();
+
+		// Set the data attribute on the blockquote after a brief delay
+		setTimeout(() => {
+			const { selection } = editor!.state;
+			const resolved = selection.$from;
+			// Find the blockquote ancestor
+			for (let depth = resolved.depth; depth > 0; depth--) {
+				const node = resolved.node(depth);
+				if (node.type.name === 'blockquote') {
+					const pos = resolved.before(depth);
+					const domNode = editor!.view.nodeDOM(pos);
+					if (domNode instanceof HTMLElement) {
+						domNode.setAttribute('data-callout', type);
+					}
+					break;
+				}
+			}
+		}, 0);
+
+		showCalloutMenu = false;
+	};
+
+	// Prompt for link
+	const promptForLink = () => {
+		// Get selected text if any
+		if (editor) {
+			const { from, to } = editor.state.selection;
+			const selectedText = editor.state.doc.textBetween(from, to, '');
+			linkText = selectedText;
+		}
+		linkUrl = '';
+		showLinkPrompt = true;
+	};
+
+	// Insert link
+	const insertLink = () => {
+		if (!editor || !linkUrl) return;
+
+		if (linkText) {
+			// Insert link with text
+			editor.chain().focus()
+				.insertContent(`<a href="${linkUrl}">${linkText}</a>`)
+				.run();
+		} else {
+			// Set link on selection or insert URL as text
+			editor.chain().focus()
+				.setLink({ href: linkUrl })
+				.run();
+		}
+
+		showLinkPrompt = false;
+		linkUrl = '';
+		linkText = '';
+	};
+
 	// Handle slash command
 	const handleSlashCommand = (command: string) => {
 		if (!editor || !slashRange) return;
@@ -475,6 +562,18 @@
 				break;
 			case 'table':
 				editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+				break;
+			case 'divider':
+				editor.chain().focus().setHorizontalRule().run();
+				break;
+			case 'callout':
+				showCalloutMenu = true;
+				break;
+			case 'todo':
+				editor.chain().focus().toggleTaskList().run();
+				break;
+			case 'link':
+				promptForLink();
 				break;
 			case 'h1':
 				editor.chain().focus().toggleHeading({ level: 1 }).run();
@@ -812,6 +911,23 @@
 					inline: false,
 					allowBase64: false
 				}),
+				Link.configure({
+					openOnClick: false,
+					HTMLAttributes: {
+						class: 'editor-link'
+					}
+				}),
+				TaskList.configure({
+					HTMLAttributes: {
+						class: 'editor-task-list'
+					}
+				}),
+				TaskItem.configure({
+					nested: true,
+					HTMLAttributes: {
+						class: 'editor-task-item'
+					}
+				}),
 				CodeBlockLowlight.configure({
 					lowlight,
 					defaultLanguage: 'plaintext'
@@ -830,6 +946,20 @@
 			content: blocksToContent(initialBlocks),
 			onUpdate: ({ editor: ed }) => {
 				onUpdate?.(extractBlocks(ed));
+
+				// Update callout styles based on content
+				setTimeout(() => {
+					const blockquotes = element?.querySelectorAll('blockquote');
+					blockquotes?.forEach((bq) => {
+						const text = bq.textContent || '';
+						const match = text.match(/^\[!(INFO|WARNING|SUCCESS|ERROR)\]/i);
+						if (match) {
+							bq.setAttribute('data-callout', match[1].toLowerCase());
+						} else {
+							bq.removeAttribute('data-callout');
+						}
+					});
+				}, 0);
 			},
 			onTransaction: ({ editor: ed }) => {
 				// Check for slash commands
@@ -1231,6 +1361,80 @@
 	/>
 	<input type="file" class="hidden" bind:this={fileInput} onchange={handleFileSelect} />
 
+	<!-- Callout menu -->
+	{#if showCalloutMenu}
+		<button
+			class="fixed inset-0 z-40"
+			onclick={() => (showCalloutMenu = false)}
+			aria-label="Close menu"
+		></button>
+		<div
+			class="absolute z-50 bg-background border border-border rounded-lg shadow-lg py-2 w-48"
+			style="left: {slashMenuPosition.x}px; top: {slashMenuPosition.y}px"
+		>
+			<div class="px-3 py-1 text-xs text-muted uppercase tracking-wide">Type de callout</div>
+			{#each calloutTypes as callout (callout.id)}
+				<button
+					onclick={() => insertCallout(callout.id)}
+					class="w-full px-3 py-2 text-left text-sm hover:bg-surface transition-colors flex items-center gap-3"
+				>
+					<span
+						class="w-6 h-6 rounded flex items-center justify-center text-white text-xs"
+						style="background-color: {callout.color}"
+					>
+						{callout.icon}
+					</span>
+					<span class="text-foreground">{callout.label}</span>
+				</button>
+			{/each}
+		</div>
+	{/if}
+
+	<!-- Link prompt -->
+	{#if showLinkPrompt}
+		<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+			<div class="bg-background border border-border rounded-lg shadow-xl w-full max-w-sm p-4">
+				<h3 class="text-sm font-medium text-foreground mb-3">Inserer un lien</h3>
+				<div class="space-y-3">
+					<div>
+						<label class="block text-xs text-muted mb-1">URL</label>
+						<input
+							type="url"
+							bind:value={linkUrl}
+							placeholder="https://example.com"
+							class="w-full px-3 py-2 bg-surface border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+							autofocus
+						/>
+					</div>
+					<div>
+						<label class="block text-xs text-muted mb-1">Texte (optionnel)</label>
+						<input
+							type="text"
+							bind:value={linkText}
+							placeholder="Texte du lien"
+							class="w-full px-3 py-2 bg-surface border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+						/>
+					</div>
+				</div>
+				<div class="flex justify-end gap-2 mt-4">
+					<button
+						onclick={() => (showLinkPrompt = false)}
+						class="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
+					>
+						Annuler
+					</button>
+					<button
+						onclick={insertLink}
+						disabled={!linkUrl}
+						class="px-3 py-1.5 text-sm bg-accent text-white rounded hover:opacity-90 transition-opacity disabled:opacity-50"
+					>
+						Inserer
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Keyboard shortcuts hint -->
 	<div class="keyboard-hint">
 		<kbd>Alt</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> deplacer le bloc
@@ -1462,5 +1666,127 @@
 		border-radius: 0.25rem;
 		font-family: ui-monospace, monospace;
 		font-size: 0.5625rem;
+	}
+
+	/* Task list styles */
+	:global(.block-editor .editor-task-list) {
+		list-style: none;
+		padding-left: 0;
+		margin: 0.5rem 0;
+	}
+
+	:global(.block-editor .editor-task-item) {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		margin: 0.25rem 0;
+	}
+
+	:global(.block-editor .editor-task-item > label) {
+		flex-shrink: 0;
+		margin-top: 0.125rem;
+	}
+
+	:global(.block-editor .editor-task-item > label > input[type="checkbox"]) {
+		appearance: none;
+		width: 1rem;
+		height: 1rem;
+		border: 2px solid var(--border, #30363d);
+		border-radius: 0.25rem;
+		background: var(--background, #0d1117);
+		cursor: pointer;
+		position: relative;
+		transition: all 0.15s ease;
+	}
+
+	:global(.block-editor .editor-task-item > label > input[type="checkbox"]:checked) {
+		background: var(--accent, #58a6ff);
+		border-color: var(--accent, #58a6ff);
+	}
+
+	:global(.block-editor .editor-task-item > label > input[type="checkbox"]:checked::after) {
+		content: '';
+		position: absolute;
+		left: 0.25rem;
+		top: 0.0625rem;
+		width: 0.25rem;
+		height: 0.5rem;
+		border: solid white;
+		border-width: 0 2px 2px 0;
+		transform: rotate(45deg);
+	}
+
+	:global(.block-editor .editor-task-item > label > input[type="checkbox"]:hover) {
+		border-color: var(--accent, #58a6ff);
+	}
+
+	:global(.block-editor .editor-task-item > div) {
+		flex: 1;
+		min-width: 0;
+	}
+
+	:global(.block-editor .editor-task-item[data-checked="true"] > div) {
+		text-decoration: line-through;
+		color: var(--muted, #8b949e);
+	}
+
+	/* Horizontal rule / divider styles */
+	:global(.block-editor .tiptap hr) {
+		border: none;
+		border-top: 2px solid var(--border, #30363d);
+		margin: 1.5rem 0;
+	}
+
+	:global(.block-editor .tiptap hr.ProseMirror-selectednode) {
+		border-top-color: var(--accent, #58a6ff);
+	}
+
+	/* Link styles */
+	:global(.block-editor .editor-link),
+	:global(.block-editor .tiptap a) {
+		color: var(--accent, #58a6ff);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+		transition: opacity 0.15s ease;
+	}
+
+	:global(.block-editor .editor-link:hover),
+	:global(.block-editor .tiptap a:hover) {
+		opacity: 0.8;
+	}
+
+	/* Callout / alert styles */
+	:global(.block-editor .tiptap blockquote) {
+		border-left: 4px solid var(--accent, #58a6ff);
+		padding: 0.75rem 1rem;
+		margin: 1rem 0;
+		background: var(--surface, #161b22);
+		border-radius: 0 0.375rem 0.375rem 0;
+	}
+
+	:global(.block-editor .tiptap blockquote p) {
+		margin: 0;
+	}
+
+	/* Callout type styling via data attribute (set by JS) */
+	:global(.block-editor .tiptap blockquote[data-callout="info"]) {
+		border-left-color: #3b82f6;
+		background: rgba(59, 130, 246, 0.1);
+	}
+
+	:global(.block-editor .tiptap blockquote[data-callout="warning"]) {
+		border-left-color: #f59e0b;
+		background: rgba(245, 158, 11, 0.1);
+	}
+
+	:global(.block-editor .tiptap blockquote[data-callout="success"]) {
+		border-left-color: #22c55e;
+		background: rgba(34, 197, 94, 0.1);
+	}
+
+	:global(.block-editor .tiptap blockquote[data-callout="error"]) {
+		border-left-color: #ef4444;
+		background: rgba(239, 68, 68, 0.1);
 	}
 </style>

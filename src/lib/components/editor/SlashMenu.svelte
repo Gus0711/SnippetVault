@@ -12,7 +12,11 @@
 		Heading3,
 		List,
 		ListOrdered,
-		Quote
+		Quote,
+		Minus,
+		AlertCircle,
+		CheckSquare,
+		Link
 	} from 'lucide-svelte';
 
 	interface Command {
@@ -40,6 +44,10 @@
 		{ id: 'image', label: 'Image', description: 'Uploader une image', icon: Image },
 		{ id: 'file', label: 'Fichier', description: 'Joindre un fichier (PDF, ZIP...)', icon: FileIcon },
 		{ id: 'table', label: 'Tableau', description: 'Inserer un tableau 3x3', icon: Table },
+		{ id: 'divider', label: 'Separateur', description: 'Ligne de separation horizontale', icon: Minus },
+		{ id: 'callout', label: 'Callout', description: 'Bloc d\'alerte (info, warning...)', icon: AlertCircle },
+		{ id: 'todo', label: 'Todo', description: 'Liste de taches avec cases', icon: CheckSquare },
+		{ id: 'link', label: 'Lien', description: 'Inserer un lien URL', icon: Link },
 		{ id: 'h1', label: 'Titre 1', description: 'Grand titre', icon: Heading1 },
 		{ id: 'h2', label: 'Titre 2', description: 'Titre moyen', icon: Heading2 },
 		{ id: 'h3', label: 'Titre 3', description: 'Petit titre', icon: Heading3 },
@@ -57,6 +65,10 @@
 		image: ['image', 'photo', 'picture', 'img'],
 		file: ['file', 'fichier', 'attachment', 'upload', 'pdf', 'zip'],
 		table: ['table', 'tableau', 'grid', 'grille'],
+		divider: ['divider', 'separator', 'hr', 'ligne', 'separateur'],
+		callout: ['callout', 'alert', 'note', 'warning', 'info', 'alerte'],
+		todo: ['todo', 'task', 'tache', 'checkbox', 'checklist'],
+		link: ['link', 'lien', 'url', 'href', 'http'],
 		h1: ['heading', 'titre', 'h1', 'title'],
 		h2: ['heading', 'titre', 'h2', 'subtitle'],
 		h3: ['heading', 'titre', 'h3'],

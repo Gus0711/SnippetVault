@@ -365,15 +365,15 @@
 <div class="border border-border rounded overflow-hidden">
 	<!-- Bulk actions bar -->
 	{#if selectedCount > 0}
-		<div class="px-2 py-1.5 border-b border-border bg-accent/10 flex items-center gap-2">
+		<div class="px-3 py-2 border-b border-border bg-accent/10 flex items-center gap-3">
 			<button
 				onclick={clearSelection}
 				class="p-1 text-muted hover:text-foreground transition-colors"
 				title="Deselectionner"
 			>
-				<X size={12} />
+				<X size={14} />
 			</button>
-			<span class="text-[11px] font-medium text-accent">
+			<span class="text-sm font-medium text-accent">
 				{selectedCount} selectionne{selectedCount > 1 ? 's' : ''}
 			</span>
 
@@ -384,27 +384,27 @@
 				<button
 					onclick={(e) => { e.stopPropagation(); showMoveMenu = !showMoveMenu; showTagMenu = false; }}
 					disabled={actionInProgress}
-					class="flex items-center gap-1 px-2 py-1 text-[10px] bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
+					class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
 				>
-					<FolderInput size={11} />
+					<FolderInput size={14} />
 					Deplacer
 				</button>
 				{#if showMoveMenu}
 					<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 					<div
-						class="absolute top-full right-0 mt-1 bg-background border border-border rounded-lg shadow-lg py-1 w-44 z-50 max-h-48 overflow-y-auto"
+						class="absolute top-full right-0 mt-1 bg-background border border-border rounded-lg shadow-lg py-1 w-52 z-50 max-h-56 overflow-y-auto"
 						onclick={(e) => e.stopPropagation()}
 					>
 						<button
 							onclick={() => bulkMove(null)}
-							class="w-full px-3 py-1.5 text-left text-[11px] hover:bg-surface transition-colors text-muted"
+							class="w-full px-3 py-2 text-left text-sm hover:bg-surface transition-colors text-muted"
 						>
 							Aucune collection
 						</button>
 						{#each allCollections as collection (collection.id)}
 							<button
 								onclick={() => bulkMove(collection.id)}
-								class="w-full px-3 py-1.5 text-left text-[11px] hover:bg-surface transition-colors text-foreground truncate"
+								class="w-full px-3 py-2 text-left text-sm hover:bg-surface transition-colors text-foreground truncate"
 							>
 								{collection.name}
 							</button>
@@ -418,50 +418,50 @@
 				<button
 					onclick={(e) => { e.stopPropagation(); showTagMenu = !showTagMenu; showMoveMenu = false; }}
 					disabled={actionInProgress}
-					class="flex items-center gap-1 px-2 py-1 text-[10px] bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
+					class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
 				>
-					<Tags size={11} />
+					<Tags size={14} />
 					Tagger
 				</button>
 				{#if showTagMenu}
 					<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 					<div
-						class="absolute top-full right-0 mt-1 bg-background border border-border rounded-lg shadow-lg py-1 w-48 z-50"
+						class="absolute top-full right-0 mt-1 bg-background border border-border rounded-lg shadow-lg py-1 w-56 z-50"
 						onclick={(e) => e.stopPropagation()}
 					>
 						<!-- Create new tag -->
-						<div class="px-2 py-1.5 border-b border-border">
+						<div class="px-3 py-2 border-b border-border">
 							<form
 								onsubmit={(e) => { e.preventDefault(); createAndApplyTag(); }}
-								class="flex gap-1"
+								class="flex gap-2"
 							>
 								<input
 									type="text"
 									bind:value={newTagName}
 									placeholder="Nouveau tag..."
-									class="flex-1 px-2 py-1 bg-surface border border-border rounded text-[10px] text-foreground placeholder:text-muted focus:outline-none focus:border-accent min-w-0"
+									class="flex-1 px-2 py-1.5 bg-surface border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent min-w-0"
 								/>
 								<button
 									type="submit"
 									disabled={!newTagName.trim() || actionInProgress}
-									class="px-2 py-1 bg-accent text-white rounded text-[10px] hover:opacity-90 disabled:opacity-50 transition-opacity"
+									class="px-3 py-1.5 bg-accent text-white rounded text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
 								>
 									+
 								</button>
 							</form>
 						</div>
 						<!-- Existing tags -->
-						<div class="max-h-36 overflow-y-auto">
+						<div class="max-h-44 overflow-y-auto">
 							{#if allTags.length === 0}
-								<div class="px-3 py-2 text-[10px] text-muted">Aucun tag existant</div>
+								<div class="px-3 py-2 text-sm text-muted">Aucun tag existant</div>
 							{:else}
 								{#each allTags as tag (tag.id)}
 									<button
 										onclick={() => bulkAddTag(tag.id)}
-										class="w-full px-3 py-1.5 text-left text-[11px] hover:bg-surface transition-colors flex items-center gap-2"
+										class="w-full px-3 py-2 text-left text-sm hover:bg-surface transition-colors flex items-center gap-2"
 									>
 										<span
-											class="w-2 h-2 rounded-full shrink-0"
+											class="w-2.5 h-2.5 rounded-full shrink-0"
 											style={tag.color ? `background-color: ${tag.color}` : 'background-color: var(--muted)'}
 										></span>
 										<span class="text-foreground truncate">{tag.name}</span>
@@ -477,9 +477,9 @@
 			<button
 				onclick={bulkExport}
 				disabled={actionInProgress}
-				class="flex items-center gap-1 px-2 py-1 text-[10px] bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
+				class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
 			>
-				<Download size={11} />
+				<Download size={14} />
 				Exporter
 			</button>
 
@@ -487,66 +487,66 @@
 			<button
 				onclick={bulkDelete}
 				disabled={actionInProgress}
-				class="flex items-center gap-1 px-2 py-1 text-[10px] bg-red-500/10 border border-red-500/30 text-red-500 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50"
+				class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-500/10 border border-red-500/30 text-red-500 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50"
 			>
-				<Trash2 size={11} />
+				<Trash2 size={14} />
 				Supprimer
 			</button>
 		</div>
 	{/if}
 
 	<!-- Header with search -->
-	<div class="px-2 py-1.5 border-b border-border bg-surface flex items-center gap-2">
+	<div class="px-3 py-2 border-b border-border bg-surface flex items-center gap-3">
 		<!-- Search input -->
-		<div class="relative flex-1 max-w-[200px]">
-			<Search size={11} class="absolute left-1.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+		<div class="relative flex-1 max-w-[240px]">
+			<Search size={14} class="absolute left-2 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
 			<input
 				bind:this={searchInputRef}
 				bind:value={searchQuery}
 				type="text"
 				placeholder="Rechercher..."
-				class="w-full pl-6 pr-6 py-1 bg-background border border-border rounded text-[11px] text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+				class="w-full pl-8 pr-8 py-1.5 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
 			/>
 			{#if searchQuery}
 				<button
 					onclick={clearSearch}
-					class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
+					class="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
 				>
-					<X size={11} />
+					<X size={14} />
 				</button>
 			{:else}
-				<kbd class="absolute right-1 top-1/2 -translate-y-1/2 px-1 py-px bg-surface border border-border rounded text-[8px] text-muted hidden sm:block">
+				<kbd class="absolute right-1.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-surface border border-border rounded text-[10px] text-muted hidden sm:block">
 					^K
 				</kbd>
 			{/if}
 		</div>
 
 		<!-- Count -->
-		<span class="text-[10px] text-muted tabular-nums">
+		<span class="text-xs text-muted tabular-nums">
 			{filteredSnippets().length} snippet{filteredSnippets().length !== 1 ? 's' : ''}
 		</span>
 
 		<div class="flex-1"></div>
 
 		<!-- Filters -->
-		<div class="flex items-center gap-1">
+		<div class="flex items-center gap-2">
 			{#if activeFiltersCount > 0}
 				<button
 					onclick={clearFilters}
-					class="px-1 py-0.5 text-[10px] text-muted hover:text-foreground transition-colors"
+					class="px-2 py-1 text-xs text-muted hover:text-foreground transition-colors"
 				>
 					Effacer
 				</button>
 			{/if}
 			<button
 				onclick={() => (showFilters = !showFilters)}
-				class="flex items-center gap-1 px-1.5 py-1 text-[10px] rounded border transition-colors {showFilters || activeFiltersCount > 0
+				class="flex items-center gap-1.5 px-2 py-1.5 text-xs rounded border transition-colors {showFilters || activeFiltersCount > 0
 					? 'border-accent/40 text-accent bg-accent/5'
 					: 'border-transparent text-muted hover:text-foreground'}"
 			>
-				<Filter size={11} />
+				<Filter size={14} />
 				{#if activeFiltersCount > 0}
-					<span class="w-3.5 h-3.5 rounded-full bg-accent text-white text-[9px] flex items-center justify-center font-medium">
+					<span class="w-4 h-4 rounded-full bg-accent text-white text-[10px] flex items-center justify-center font-medium">
 						{activeFiltersCount}
 					</span>
 				{/if}
@@ -556,13 +556,13 @@
 
 	<!-- Filters bar -->
 	{#if showFilters}
-		<div class="px-2 py-1.5 border-b border-border bg-background/50 flex items-center gap-3 text-[10px]">
+		<div class="px-3 py-2 border-b border-border bg-background/50 flex items-center gap-4 text-xs">
 			<!-- Status -->
-			<label class="flex items-center gap-1">
-				<span class="text-muted uppercase tracking-wide">Statut</span>
+			<label class="flex items-center gap-2">
+				<span class="text-muted uppercase tracking-wide text-[10px]">Statut</span>
 				<select
 					bind:value={statusFilter}
-					class="bg-surface border border-border rounded px-1 py-0.5 text-foreground focus:outline-none focus:border-accent"
+					class="bg-surface border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-accent"
 				>
 					<option value="all">Tous</option>
 					<option value="draft">Brouillons</option>
@@ -572,11 +572,11 @@
 
 			<!-- Tags -->
 			{#if usedTags().length > 0}
-				<label class="flex items-center gap-1">
-					<span class="text-muted uppercase tracking-wide">Tag</span>
+				<label class="flex items-center gap-2">
+					<span class="text-muted uppercase tracking-wide text-[10px]">Tag</span>
 					<select
 						bind:value={tagFilter}
-						class="bg-surface border border-border rounded px-1 py-0.5 text-foreground focus:outline-none focus:border-accent"
+						class="bg-surface border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-accent"
 					>
 						<option value={null}>Tous</option>
 						{#each usedTags() as tag (tag.id)}
@@ -588,11 +588,11 @@
 
 			<!-- Language -->
 			{#if languages.length > 0}
-				<label class="flex items-center gap-1">
-					<span class="text-muted uppercase tracking-wide">Lang</span>
+				<label class="flex items-center gap-2">
+					<span class="text-muted uppercase tracking-wide text-[10px]">Lang</span>
 					<select
 						bind:value={languageFilter}
-						class="bg-surface border border-border rounded px-1 py-0.5 text-foreground focus:outline-none focus:border-accent font-mono"
+						class="bg-surface border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-accent font-mono"
 					>
 						<option value={null}>Tous</option>
 						{#each languages as lang}
@@ -606,74 +606,74 @@
 
 	<!-- Table -->
 	{#if filteredSnippets().length === 0}
-		<div class="text-center py-6">
-			<FileText size={24} class="mx-auto text-muted mb-1.5 opacity-40" />
-			<p class="text-[11px] text-muted">
+		<div class="text-center py-8">
+			<FileText size={32} class="mx-auto text-muted mb-2 opacity-40" />
+			<p class="text-sm text-muted">
 				{searchQuery.trim() || activeFiltersCount > 0 ? 'Aucun resultat' : 'Aucun snippet'}
 			</p>
 		</div>
 	{:else}
-		<table class="w-full text-[11px]">
+		<table class="w-full text-sm">
 			<thead>
 				<tr class="border-b border-border bg-surface/50">
 					<!-- Checkbox column -->
-					<th class="w-8 px-2">
+					<th class="w-10 px-3">
 						<button
 							onclick={toggleSelectAll}
 							class="p-0.5 text-muted hover:text-foreground transition-colors"
 							title={allSelected ? 'Tout deselectionner' : 'Tout selectionner'}
 						>
 							{#if allSelected}
-								<CheckSquare size={14} class="text-accent" />
+								<CheckSquare size={16} class="text-accent" />
 							{:else if someSelected}
-								<Minus size={14} class="text-accent" />
+								<Minus size={16} class="text-accent" />
 							{:else}
-								<Square size={14} />
+								<Square size={16} />
 							{/if}
 						</button>
 					</th>
 					<th class="font-normal text-muted/70 text-left">
 						<button
 							onclick={() => toggleSort('title')}
-							class="flex items-center gap-0.5 px-2 py-1.5 hover:text-foreground transition-colors w-full"
+							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors w-full"
 						>
 							Titre
 							{#if sortKey === 'title'}
-								{#if sortDir === 'asc'}<ArrowUp size={10} />{:else}<ArrowDown size={10} />{/if}
+								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
+							{/if}
+						</button>
+					</th>
+					<th class="font-medium text-muted text-left w-24">
+						<button
+							onclick={() => toggleSort('language')}
+							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors"
+						>
+							Lang
+							{#if sortKey === 'language'}
+								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
+							{/if}
+						</button>
+					</th>
+					<th class="font-normal text-muted/70 text-left px-3 py-2 w-36">Tags</th>
+					<th class="font-medium text-muted text-left w-20">
+						<button
+							onclick={() => toggleSort('updatedAt')}
+							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors"
+						>
+							Modif.
+							{#if sortKey === 'updatedAt'}
+								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
 							{/if}
 						</button>
 					</th>
 					<th class="font-medium text-muted text-left w-20">
 						<button
-							onclick={() => toggleSort('language')}
-							class="flex items-center gap-0.5 px-2 py-1.5 hover:text-foreground transition-colors"
-						>
-							Lang
-							{#if sortKey === 'language'}
-								{#if sortDir === 'asc'}<ArrowUp size={10} />{:else}<ArrowDown size={10} />{/if}
-							{/if}
-						</button>
-					</th>
-					<th class="font-normal text-muted/70 text-left px-2 py-1.5 w-32">Tags</th>
-					<th class="font-medium text-muted text-left w-16">
-						<button
-							onclick={() => toggleSort('updatedAt')}
-							class="flex items-center gap-0.5 px-2 py-1.5 hover:text-foreground transition-colors"
-						>
-							Modif.
-							{#if sortKey === 'updatedAt'}
-								{#if sortDir === 'asc'}<ArrowUp size={10} />{:else}<ArrowDown size={10} />{/if}
-							{/if}
-						</button>
-					</th>
-					<th class="font-medium text-muted text-left w-14">
-						<button
 							onclick={() => toggleSort('status')}
-							class="flex items-center gap-0.5 px-2 py-1.5 hover:text-foreground transition-colors"
+							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors"
 						>
 							Statut
 							{#if sortKey === 'status'}
-								{#if sortDir === 'asc'}<ArrowUp size={10} />{:else}<ArrowDown size={10} />{/if}
+								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
 							{/if}
 						</button>
 					</th>
@@ -686,21 +686,21 @@
 						class="hover:bg-surface/50 cursor-pointer transition-colors group {selectedIds.has(snippet.id) ? 'bg-accent/5' : ''}"
 					>
 						<!-- Checkbox -->
-						<td class="px-2 py-1.5">
+						<td class="px-3 py-2.5">
 							<button
 								onclick={(e) => toggleSelect(snippet.id, e)}
 								class="p-0.5 text-muted hover:text-foreground transition-colors"
 							>
 								{#if selectedIds.has(snippet.id)}
-									<CheckSquare size={14} class="text-accent" />
+									<CheckSquare size={16} class="text-accent" />
 								{:else}
-									<Square size={14} class="opacity-30 group-hover:opacity-100" />
+									<Square size={16} class="opacity-30 group-hover:opacity-100" />
 								{/if}
 							</button>
 						</td>
 						<!-- Title -->
-						<td class="px-2 py-1.5">
-							<div class="flex items-center gap-1.5">
+						<td class="px-3 py-2.5">
+							<div class="flex items-center gap-2">
 								<!-- Pin button -->
 								<button
 									onclick={(e) => togglePin(e, snippet.id)}
@@ -709,13 +709,13 @@
 										: 'text-transparent group-hover:text-muted/40 hover:!text-accent'}"
 									title={snippet.isPinned ? 'Desepingler' : 'Epingler'}
 								>
-									<Pin size={11} class={snippet.isPinned ? 'fill-current' : ''} />
+									<Pin size={14} class={snippet.isPinned ? 'fill-current' : ''} />
 								</button>
-								<span class="text-foreground font-medium truncate max-w-[260px]">
+								<span class="text-foreground font-medium truncate max-w-[300px]">
 									{snippet.title}
 								</span>
 								{#if snippet.collection}
-									<span class="text-[9px] text-muted/70 truncate max-w-[100px]">
+									<span class="text-xs text-muted/70 truncate max-w-[120px]">
 										{snippet.collection.name}
 									</span>
 								{/if}
@@ -723,11 +723,11 @@
 						</td>
 
 						<!-- Language -->
-						<td class="px-2 py-1.5">
+						<td class="px-3 py-2.5">
 							{#if snippet.language}
 								{@const langColor = getLanguageColor(snippet.language)}
 								<span
-									class="px-1 py-px text-[9px] font-mono rounded"
+									class="px-1.5 py-0.5 text-xs font-mono rounded"
 									style="background-color: {langColor}15; color: {langColor}; border: 1px solid {langColor}30"
 								>
 									{formatLang(snippet.language)}
@@ -738,12 +738,12 @@
 						</td>
 
 						<!-- Tags -->
-						<td class="px-2 py-1.5">
+						<td class="px-3 py-2.5">
 							{#if snippet.tags && snippet.tags.filter(Boolean).length > 0}
-								<div class="flex items-center gap-0.5 flex-wrap">
+								<div class="flex items-center gap-1 flex-wrap">
 									{#each snippet.tags.filter((t): t is Tag => t !== undefined).slice(0, 2) as tag (tag.id)}
 										<span
-											class="px-1 py-px rounded text-[9px]"
+											class="px-1.5 py-0.5 rounded text-xs"
 											style={tag.color
 												? `background-color: ${tag.color}12; color: ${tag.color}`
 												: 'background-color: var(--sf); color: var(--tx-muted)'}
@@ -752,7 +752,7 @@
 										</span>
 									{/each}
 									{#if snippet.tags.filter(Boolean).length > 2}
-										<span class="text-[9px] text-muted/50">+{snippet.tags.filter(Boolean).length - 2}</span>
+										<span class="text-xs text-muted/50">+{snippet.tags.filter(Boolean).length - 2}</span>
 									{/if}
 								</div>
 							{:else}
@@ -761,19 +761,19 @@
 						</td>
 
 						<!-- Updated -->
-						<td class="px-2 py-1.5 text-muted tabular-nums">
+						<td class="px-3 py-2.5 text-muted tabular-nums">
 							{formatDate(snippet.updatedAt)}
 						</td>
 
 						<!-- Status -->
-						<td class="px-2 py-1.5">
+						<td class="px-3 py-2.5">
 							{#if snippet.status === 'published'}
-								<span class="flex items-center gap-0.5 text-[9px] text-accent">
-									<Globe size={9} />
-									Pub
+								<span class="flex items-center gap-1 text-xs text-accent">
+									<Globe size={12} />
+									Publie
 								</span>
 							{:else}
-								<span class="text-[9px] text-muted/50">Brouillon</span>
+								<span class="text-xs text-muted/50">Brouillon</span>
 							{/if}
 						</td>
 					</tr>
