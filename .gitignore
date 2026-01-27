@@ -10,6 +10,11 @@ node_modules
 
 # Data (SQLite DB + uploads)
 /data
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
 
 # OS
 .DS_Store
@@ -25,5 +30,20 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# IDE / Tools
+.claude/
+.idea/
+.vscode/
+*.log
+
 # Sensitive docs
 docs/RESET-PASSWORD.md
+
+# Test scripts with potential secrets
+scripts/test-*.ts
+scripts/test-*.js
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

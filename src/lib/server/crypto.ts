@@ -4,7 +4,10 @@ import { env } from '$env/dynamic/private';
 const ALGORITHM = 'aes-256-gcm';
 
 function getKey(): Buffer {
-	const secret = env.SECRET_KEY || 'change-me-in-production';
+	const secret = env.SECRET_KEY;
+	if (!secret || secret.length < 32) {
+		throw new Error('SECRET_KEY environment variable is required and must be at least 32 characters');
+	}
 	// Derive a 32-byte key from SECRET_KEY using simple hash
 	return createHash('sha256').update(secret).digest();
 }
