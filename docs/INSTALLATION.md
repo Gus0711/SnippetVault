@@ -1,0 +1,303 @@
+# Guide d'Installation
+
+## Prerequis
+
+- **Node.js** 20.x ou superieur
+- **npm** 10.x ou superieur
+- **Git** (pour cloner le repo)
+
+Pour Docker :
+- **Docker** 24.x ou superieur
+- **Docker Compose** v2
+
+---
+
+## Installation locale (developpement)
+
+### 1. Cloner le repository
+
+```bash
+git clone https://github.com/user/snippetvault.git
+cd snippetvault
+```
+
+### 2. Installer les dependances
+
+```bash
+npm install
+```
+
+### 3. Configurer l'environnement
+
+```bash
+cp .env.example .env
+```
+
+Editer `.env` :
+
+```env
+DATABASE_URL=file:./data/snippetvault.db
+UPLOAD_DIR=./data/uploads
+UPLOAD_MAX_SIZE=52428800
+SECRET_KEY=votre-cle-secrete-aleatoire-32-chars
+ORIGIN=http://localhost:5173
+```
+
+### 4. Initialiser la base de donnees
+
+```bash
+# Creer le dossier data
+mkdir -p data/uploads
+
+# Appliquer les migrations
+npm run db:migrate
+```
+
+### 5. Lancer le serveur de developpement
+
+```bash
+npm run dev
+```
+
+L'application est accessible sur `http://localhost:5173`.
+
+### 6. Configuration initiale
+
+1. Ouvrir `http://localhost:5173/auth/setup`
+2. Creer le compte administrateur
+3. Se connecter
+
+---
+
+## Installation Docker (production)
+
+### 1. Cloner et configurer
+
+```bash
+git clone https://github.com/user/snippetvault.git
+cd snippetvault
+cp .env.example .env
+```
+
+Editer `.env` pour la production :
+
+```env
+DATABASE_URL=file:./data/snippetvault.db
+UPLOAD_DIR=./data/uploads
+UPLOAD_MAX_SIZE=52428800
+SECRET_KEY=une-longue-cle-aleatoire-tres-securisee
+ORIGIN=https://votre-domaine.com
+```
+
+### 2. Lancer avec Docker Compose
+
+```bash
+docker compose up -d
+```
+
+### 3. Verifier le statut
+
+```bash
+docker compose ps
+docker compose logs -f snippetvault
+```
+
+### 4. Configuration initiale
+
+1. Ouvrir `https://votre-domaine.com/auth/setup`
+2. Creer le compte administrateur
+
+---
+
+## Structure Docker
+
+### docker-compose.yml
+
+```yaml
+services:
+  snippetvault:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=file:./data/snippetvault.db
+      - UPLOAD_DIR=./data/uploads
+      - SECRET_KEY=${SECRET_KEY}
+      - ORIGIN=${ORIGIN}
+    restart: unless-stopped
+```
+
+### Volumes
+
+| Volume | Contenu |
+|--------|---------|
+| `./data` | Base SQLite + fichiers uploades |
+
+### Ports
+
+| Port | Service |
+|------|---------|
+| 3000 | Application web |
+
+---
+
+## Reverse Proxy (Nginx)
+
+Configuration recommandee pour HTTPS :
+
+```nginx
+server {
+    listen 80;
+    server_name votre-domaine.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name votre-domaine.com;
+
+    ssl_certificate /etc/letsencrypt/live/votre-domaine.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/votre-domaine.com/privkey.pem;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+---
+
+## Mise a jour
+
+### Locale
+
+```bash
+git pull
+npm install
+npm run db:migrate
+npm run build
+```
+
+### Docker
+
+```bash
+git pull
+docker compose build
+docker compose up -d
+```
+
+---
+
+## Sauvegarde
+
+### Donnees a sauvegarder
+
+```
+data/
+├── snippetvault.db      # Base de donnees SQLite
+├── snippetvault.db-wal  # Journal WAL (si existe)
+├── snippetvault.db-shm  # Memoire partagee (si existe)
+└── uploads/             # Fichiers uploades
+```
+
+### Script de sauvegarde
+
+```bash
+#!/bin/bash
+BACKUP_DIR=/path/to/backups
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# Arret temporaire pour coherence
+docker compose stop snippetvault
+
+# Copie des fichiers
+tar -czf $BACKUP_DIR/snippetvault_$DATE.tar.gz data/
+
+# Redemarrage
+docker compose start snippetvault
+
+echo "Backup created: snippetvault_$DATE.tar.gz"
+```
+
+### Restauration
+
+```bash
+# Arret
+docker compose stop snippetvault
+
+# Restauration
+rm -rf data/*
+tar -xzf snippetvault_20240115_120000.tar.gz
+
+# Redemarrage
+docker compose start snippetvault
+```
+
+---
+
+## Verification de l'installation
+
+### Checklist
+
+- [ ] Application accessible sur l'URL configuree
+- [ ] Page de setup affichee (premiere connexion)
+- [ ] Compte admin cree avec succes
+- [ ] Creation de snippet fonctionnelle
+- [ ] Upload d'image fonctionnel
+- [ ] Recherche retourne des resultats
+
+### Tests de base
+
+```bash
+# Verifier le statut HTTP
+curl -I http://localhost:3000
+
+# Verifier l'API (apres creation compte)
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  http://localhost:3000/api/v1/snippets
+```
+
+---
+
+## Problemes courants
+
+### Port deja utilise
+
+```bash
+# Trouver le processus
+lsof -i :3000
+
+# Ou changer le port dans docker-compose.yml
+ports:
+  - "3001:3000"
+```
+
+### Permissions fichiers
+
+```bash
+# Donner les permissions au dossier data
+chmod -R 755 data/
+```
+
+### Base de donnees corrompue
+
+```bash
+# Verifier l'integrite
+sqlite3 data/snippetvault.db "PRAGMA integrity_check;"
+
+# Si corrompu, restaurer depuis backup
+```
+
+Voir [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) pour plus de solutions.

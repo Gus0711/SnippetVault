@@ -1,110 +1,165 @@
 # Reprise de session - SnippetVault
 
-> Dernière mise à jour : 23 janvier 2026
+> Derniere mise a jour : 27 janvier 2026
 
-## État actuel du projet
+## Etat actuel du projet
 
-Le projet SnippetVault est fonctionnel avec les fonctionnalités principales implémentées.
+Le projet SnippetVault est **complet et fonctionnel** avec toutes les fonctionnalites principales implementees. Une documentation exhaustive a ete creee dans le dossier `docs/`.
 
-## Fonctionnalités implémentées récemment
+## Documentation disponible
 
-### 1. Éditeur de blocs (TipTap)
-- **Fichier** : `src/lib/components/editor/BlockEditor.svelte`
-- Slash menu (`/`) pour insérer : code, image, titres, listes, citations
-- **Sélecteur de langage** pour les blocs code (dropdown en haut à droite)
-- Upload d'images par drag & drop ou paste
-- Navigation clavier : Enter pour sélectionner, ↑↓ pour naviguer
+Le dossier `docs/` contient la documentation complete :
 
-### 2. Syntax Highlighting
-- **Éditeur** : lowlight (highlight.js) avec tous les langages (`all`)
-- **Lecture/Public** : Shiki côté serveur avec thèmes configurables
-- **CSS** : Styles hljs dans `src/app.css` (light + dark mode)
+| Document | Description |
+|----------|-------------|
+| `README.md` | Vue d'ensemble de la documentation |
+| `ARCHITECTURE.md` | Architecture technique detaillee |
+| `FEATURES.md` | Catalogue complet des fonctionnalites |
+| `API.md` | Documentation de l'API REST (42+ endpoints) |
+| `DATABASE.md` | Schema et modeles de donnees (9 tables + FTS5) |
+| `INSTALLATION.md` | Guide d'installation |
+| `CONFIGURATION.md` | Options de configuration |
+| `DEPLOYMENT.md` | Procedures de deploiement Docker |
+| `DEVELOPMENT.md` | Guide du developpeur |
+| `TROUBLESHOOTING.md` | Resolution de problemes courants |
+| `RESET-PASSWORD.md` | Reinitialisation mot de passe admin |
 
-### 3. Publication de snippets
-- **API** : `src/routes/api/snippets/[id]/+server.ts`
-  - `status: 'published' | 'draft'`
-  - Génère `publicId` avec nanoid (10 caractères)
-  - Dépublier supprime le `publicId` (casse le lien)
-- **Page publique** : `src/routes/(public)/s/[publicId]/`
-  - Design sombre professionnel
-  - Shiki avec thème configurable
-  - Bouton "Copy" sur chaque bloc code
-  - Footer "Powered by SnippetVault"
-- **Options de publication** (modale) :
-  - Thème de code (GitHub Dark/Light, Dracula, Nord, etc.)
-  - Afficher/masquer description
-  - Afficher/masquer images
+## Fonctionnalites implementees
 
-### 4. Recherche FTS5
-- **Table virtuelle** : `snippets_fts` (titre, contenu, tags)
-- **Triggers auto** : sync sur insert/update/delete de snippets, blocks, tags
-- **API** : `GET /api/search?q=query&collection=id&tag=name&status=draft|published`
-- **UI** : Modal Ctrl+K avec debounce 200ms
-  - Filtres : collection, statut, tag
-  - Navigation clavier
-  - Résultats avec preview, tags, collection
-- **Rebuild au démarrage** : `hooks.server.ts` appelle `rebuildFTSIndex()`
+### Editeur de blocs (TipTap)
+- **Fichier** : `src/lib/components/editor/BlockEditor.svelte` (1800+ lignes)
+- 17+ types de blocs : markdown, code, image, fichier, tableau, callout, taches, liens, separateurs
+- Menu slash (`/`) pour insertion rapide
+- Detection automatique du langage de programmation
+- Selecteur de langage pour les blocs code
+- Upload drag & drop et paste pour images/fichiers
+- Deplacement de blocs (Alt+Up/Down ou boutons)
+- Tableaux avec gestion lignes/colonnes/en-tetes
 
-## Fichiers clés modifiés
+### Recherche full-text (FTS5)
+- Table virtuelle `snippets_fts` indexant titre, contenu, tags
+- 7 triggers pour synchronisation automatique
+- Reconstruction au demarrage serveur
+- API : `GET /api/search?q=query&collection=id&tag=name&status=draft|published`
+
+### Publication et partage
+- URLs publiques uniques (`/s/[publicId]`)
+- Embed iframe (`/embed/[publicId]`)
+- 9 themes Shiki pour le rendu code
+- Options d'affichage (description, pieces jointes)
+- Bouton copier sur chaque bloc code
+
+### Actions en lot
+- Multi-selection dans SnippetTable
+- Deplacer vers autre collection
+- Ajouter tags (avec creation inline)
+- Export ZIP multiple
+- Suppression groupee
+
+### Export
+- Export individuel (Markdown ou ZIP)
+- Export en lot (ZIP avec INDEX.md)
+- Export complet du vault
+- Integration GitHub Gist
+
+### Administration
+- Gestion utilisateurs (liste, suppression)
+- Invitations par email
+- Roles admin/user
+- Reconstruction index FTS
+
+### API REST v1
+- 42+ endpoints documentes
+- Authentification par cle API
+- CRUD complet snippets/collections/tags
+- Recherche full-text
+
+### Theme
+- Light / Dark / System
+- Persistance localStorage + serveur
+- Variables CSS coherentes
+
+## Fichiers cles
 
 ```
 src/
-├── app.css                          # Styles hljs + prose
-├── hooks.server.ts                  # + FTS rebuild au démarrage
+├── app.css                          # Styles globaux (Tailwind, hljs)
+├── hooks.server.ts                  # Auth middleware, FTS rebuild
 ├── lib/
 │   ├── components/
-│   │   └── editor/
-│   │       ├── BlockEditor.svelte   # Éditeur TipTap + sélecteur langage
-│   │       └── SlashMenu.svelte     # Menu slash commands
-│   └── server/
-│       └── db/
-│           └── index.ts             # + FTS5 table + triggers + rebuildFTSIndex()
+│   │   ├── editor/
+│   │   │   ├── BlockEditor.svelte   # Editeur principal
+│   │   │   ├── SlashMenu.svelte     # Menu commandes
+│   │   │   └── FileBlock.ts         # Extension fichiers
+│   │   ├── SnippetTable.svelte      # Table avec multi-selection
+│   │   ├── CollectionTree.svelte    # Arbre collections
+│   │   └── Sidebar.svelte           # Navigation
+│   ├── server/
+│   │   ├── auth/                    # Lucia Auth
+│   │   ├── db/
+│   │   │   ├── schema.ts            # 9 tables Drizzle
+│   │   │   └── index.ts             # FTS5, triggers
+│   │   └── services/permissions.ts  # Controle d'acces
+│   ├── stores/
+│   │   └── theme.svelte.ts          # Theme store (Svelte 5 runes)
+│   └── utils/colors.ts              # Couleurs langages, detection
 ├── routes/
-│   ├── (app)/
-│   │   ├── +layout.svelte           # + Modal recherche Ctrl+K
-│   │   └── snippets/[id]/
-│   │       ├── +page.server.ts      # Shiki + marked rendering
-│   │       └── +page.svelte         # UI publication + modale options
-│   ├── (public)/
-│   │   ├── +layout.svelte           # Layout sans auth
-│   │   └── s/[publicId]/            # Page publique
-│   │       ├── +page.server.ts
-│   │       └── +page.svelte
-│   └── api/
-│       ├── search/+server.ts        # API recherche FTS5
-│       └── snippets/[id]/+server.ts # + nanoid + options publication
+│   ├── (app)/                       # Routes authentifiees
+│   ├── (public)/                    # Routes publiques
+│   ├── auth/                        # Login, register, setup
+│   └── api/                         # 42+ endpoints
+└── docs/                            # Documentation complete
 ```
 
-## Packages ajoutés
+## Stack technique
 
-- `nanoid` - Génération d'IDs publics
-- `shiki` - Syntax highlighting côté serveur
-- `marked` - Parsing markdown
-- `lowlight` - Syntax highlighting dans TipTap (déjà via @tiptap/extension-code-block-lowlight)
+| Composant | Version |
+|-----------|---------|
+| SvelteKit | 2.49.1 |
+| Drizzle ORM | 0.45.1 |
+| TipTap | 3.17.0 |
+| Shiki | 3.21.0 |
+| Tailwind CSS | 4.1.18 |
+| better-sqlite3 | 12.6.2 |
 
 ## Points d'attention
 
-1. **FTS5** : L'index est reconstruit à chaque démarrage du serveur. C'est intentionnel pour garantir la cohérence.
+1. **FTS5** : Index reconstruit a chaque demarrage serveur (~1s/1000 snippets)
+2. **Svelte 5 Runes** : Utiliser extension `.svelte.ts` pour les fichiers avec `$state`
+3. **Drizzle** : `.all()` retourne un array directement (pas une Promise)
+4. **Upload** : Extensions bloquees (exe, bat, cmd, msi, scr, ps1, vbs, js, jar)
 
-2. **Thème sombre/clair** : Le CSS supporte les deux (`.dark` prefix), mais le toggle n'est pas implémenté. L'app est en mode clair par défaut.
+## Prochaines etapes potentielles
 
-3. **Syntax highlighting éditeur** : Utilise les classes `hljs-*` stylées dans `app.css`. Si ça ne marche pas, vérifier que lowlight génère bien les classes.
+Toutes les fonctionnalites principales sont implementees. Ameliorations futures possibles :
 
-## Prochaines étapes possibles
-
-- [ ] Toggle thème sombre/clair
-- [ ] Page de paramètres utilisateur
-- [ ] Export de snippets (JSON, Gist)
-- [ ] Partage de collections
-- [ ] API REST documentée pour intégration AI
-- [ ] Embed de snippets (iframe)
+- [ ] Collaboration temps reel (CRDT)
+- [ ] Versioning de snippets
+- [ ] Import depuis GitHub Gist
+- [ ] Plugins editeur personnalises
+- [ ] Themes de syntaxe personnalises
+- [ ] PWA pour acces offline
 
 ## Pour tester
 
 ```bash
+# Developpement
 npm run dev
 # Ouvrir http://localhost:5173
-# Ctrl+K pour rechercher
-# Créer un snippet, ajouter du code avec /code
-# Publier et voir la page publique /s/[id]
+# Premiere visite : /auth/setup pour creer l'admin
+
+# Production Docker
+docker compose up -d
+# Ouvrir http://localhost:3000
+```
+
+## Commandes utiles
+
+```bash
+npm run dev              # Dev server
+npm run build            # Build production
+npm run db:generate      # Generer migration
+npm run db:migrate       # Appliquer migrations
+npm run db:studio        # GUI base de donnees
+npm run create-invite    # Creer invitation
 ```

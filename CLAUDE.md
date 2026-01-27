@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - REST API for AI integration
 
 Full specification: `SnippetVault_Specification.md`
+Full documentation: `docs/` folder
 
 ## Tech Stack
 
@@ -102,10 +103,11 @@ ORIGIN=http://localhost:5173
 ## Data Model
 
 ### Core Tables
-- **users**: id, email, password_hash, name, api_key, role, theme_preference
+- **users**: id, email, password_hash, name, api_key, role, theme_preference, github_token (encrypted)
+- **sessions**: id, user_id, expires_at (Lucia Auth)
 - **collections**: id, name, parent_id (unlimited hierarchy), owner_id, is_shared
 - **collection_members**: collection_id, user_id, permission (read/write)
-- **snippets**: id, title, collection_id, author_id, status (draft/published), public_id
+- **snippets**: id, title, collection_id, author_id, status (draft/published), public_id, is_favorite, is_pinned, gist_id, gist_url
 - **snippet_blocks**: id, snippet_id, order, type (markdown/code/image/file), content, language, file_path, file_name, file_size
 - **tags**: id, name, color, user_id
 - **snippet_tags**: snippet_id, tag_id
@@ -223,10 +225,14 @@ The block-based editor is located in `src/lib/components/editor/`:
 
 ### Supported Block Types
 - **markdown**: Text with headings, lists, quotes, inline formatting
-- **code**: Syntax-highlighted code blocks (via lowlight)
-- **image**: Uploaded images
+- **code**: Syntax-highlighted code blocks (via lowlight) with auto-language detection
+- **image**: Uploaded images (paste & drag-drop supported)
 - **file**: File attachments (PDF, ZIP, etc.)
 - **table**: Tables with header row/column support
+- **callout**: Info, warning, success, error boxes
+- **task**: Task lists with checkboxes
+- **link**: Hyperlinks with custom text
+- **divider**: Horizontal separator
 
 ### Table Features
 - Insert via `/table` slash command
@@ -250,6 +256,15 @@ Type `/` in the editor to access:
 - `/h1`, `/h2`, `/h3` - Headings
 - `/bullet`, `/numbered` - Lists
 - `/quote` - Blockquote
+- `/callout` - Callout box (info/warning/success/error)
+- `/task` - Task list with checkboxes
+- `/link` - Insert hyperlink
+- `/divider` - Horizontal separator
+
+### Language Auto-Detection
+The editor automatically detects programming languages when pasting code. Supported: Python, JavaScript, TypeScript, Java, C, C++, HTML, CSS, SQL, Bash, JSON, YAML, Markdown, Go, Rust, PHP, Ruby, Swift, Kotlin.
+
+Implementation: `detectLanguage()` function in `BlockEditor.svelte` uses regex pattern matching.
 
 ### Block Movement
 Blocks can be reordered in two ways:
@@ -378,3 +393,45 @@ When uncertain about syntax, API, or behavior, consult official documentation:
 - Lucide icons: `/lucide-icons/lucide`
 - lowlight: `/wooorm/lowlight` (for TipTap code blocks)
 - archiver: `/archiverjs/node-archiver` (for ZIP export)
+
+## GitHub Gist Integration
+
+Snippets can be exported to GitHub Gist:
+- **Setup**: Save GitHub Personal Access Token in Settings (with `gist` scope)
+- **Token storage**: Encrypted in database (`users.github_token`)
+- **API**: `POST /api/gist` with `{ snippetId, isPublic }`
+- **Features**: Create new gist or update existing (tracked via `snippets.gist_id`)
+
+## Additional API Endpoints
+
+### Admin APIs (requires admin role)
+- `GET /api/admin/users` - List all users
+- `DELETE /api/admin/users/[id]` - Delete user
+- `GET /api/admin/invitations` - List pending invitations
+- `POST /api/admin/invitations` - Create invitation
+- `DELETE /api/admin/invitations/[id]` - Revoke invitation
+- `GET /api/admin/rebuild-fts` - Rebuild FTS5 index
+
+### Snippet Features
+- `PUT /api/snippets/[id]/favorite` - Toggle favorite
+- `PUT /api/snippets/[id]/pin` - Toggle pin
+
+### Theme
+- `PUT /api/user/theme` - Save theme preference (light/dark/system)
+
+## MCP Server (Claude Integration)
+
+An optional MCP server for Claude AI integration is available in `mcp-server/`:
+- Separate Node.js service connecting to SnippetVault API
+- Docker service on port 3002
+- Configure via `SNIPPETVAULT_API_KEY` environment variable
+
+## Theme System
+
+The theme system uses Svelte 5 runes for reactivity:
+- **Store**: `src/lib/stores/theme.svelte.ts`
+- **Values**: 'light', 'dark', 'system'
+- **Persistence**: localStorage + database sync
+- **Component**: `ThemeToggle.svelte`
+
+CSS variables in `src/app.css` control colors for both modes.
