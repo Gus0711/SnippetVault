@@ -47,6 +47,10 @@
 	let surveySubmitted = $state(false);
 	let surveyLoading = $state(false);
 
+	// Lightbox state
+	let lightboxOpen = $state(false);
+	let lightboxSrc = $state('');
+
 	async function submitSurvey(e: Event) {
 		e.preventDefault();
 		if (!surveyEmail) return;
@@ -199,6 +203,16 @@
 		submitting: lang === 'fr' ? 'Envoi...' : 'Submitting...',
 		thankYou: lang === 'fr' ? 'Merci ! Nous vous contacterons.' : 'Thank you! We\'ll be in touch.',
 		noSpam: lang === 'fr' ? 'Pas de spam, juste une notification au lancement.' : 'No spam, just a notification at launch.',
+
+		// Demo section
+		demoTitle: lang === 'fr' ? 'Decouvrez l\'interface' : 'See it in action',
+		demoDesc: lang === 'fr'
+			? 'Une interface claire et dense, concue pour les developpeurs. Dashboard avec statistiques, recherche rapide, et gestion par tags.'
+			: 'A clean and dense interface, designed for developers. Dashboard with statistics, quick search, and tag management.',
+		demoDashboard: 'Dashboard',
+		demoLanguages: lang === 'fr' ? 'Langages detectes' : 'Detected languages',
+		demoTags: lang === 'fr' ? 'Organisation par tags' : 'Tag organization',
+		demoSearch: lang === 'fr' ? 'Recherche instantanee' : 'Instant search',
 
 		// CTA
 		ctaTitle: lang === 'fr' ? 'Pret a organiser vos snippets ?' : 'Ready to organize your snippets?',
@@ -472,6 +486,68 @@ const response = await fetch('/api/v1/snippets', {
 		</div>
 	</section>
 
+	<!-- Demo Section -->
+	<section id="demo" class="py-24">
+		<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+			<div class="text-center mb-12">
+				<h2 class="text-3xl sm:text-4xl font-bold text-foreground">
+					{t.demoTitle}
+				</h2>
+				<p class="mt-4 text-lg text-muted max-w-2xl mx-auto">
+					{t.demoDesc}
+				</p>
+			</div>
+
+			<!-- Demo GIF in browser frame -->
+			<div class="relative mx-auto max-w-5xl">
+				<div class="rounded-xl border border-border bg-surface shadow-2xl overflow-hidden">
+					<div class="flex items-center gap-2 border-b border-border bg-background px-4 py-3">
+						<div class="flex gap-1.5">
+							<div class="h-3 w-3 rounded-full bg-red-500/80"></div>
+							<div class="h-3 w-3 rounded-full bg-yellow-500/80"></div>
+							<div class="h-3 w-3 rounded-full bg-green-500/80"></div>
+						</div>
+						<div class="flex-1 flex justify-center">
+							<div class="flex items-center gap-2 rounded-md bg-surface border border-border px-3 py-1 text-xs text-muted">
+								<Lock class="h-3 w-3" />
+								localhost:3000/dashboard
+							</div>
+						</div>
+					</div>
+					<div class="relative">
+						<img
+							src="/images/snippetvault_video.gif"
+							alt="SnippetVault Demo"
+							class="w-full"
+							loading="lazy"
+						/>
+					</div>
+				</div>
+				<div class="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-xl bg-accent/10"></div>
+			</div>
+
+			<!-- Feature badges under demo -->
+			<div class="mt-12 flex flex-wrap justify-center gap-4">
+				<div class="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+					<div class="h-2 w-2 rounded-full bg-accent"></div>
+					<span class="text-foreground">{t.demoDashboard}</span>
+				</div>
+				<div class="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+					<div class="h-2 w-2 rounded-full bg-amber-500"></div>
+					<span class="text-foreground">{t.demoLanguages}</span>
+				</div>
+				<div class="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+					<div class="h-2 w-2 rounded-full bg-cyan-500"></div>
+					<span class="text-foreground">{t.demoTags}</span>
+				</div>
+				<div class="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+					<div class="h-2 w-2 rounded-full bg-green-500"></div>
+					<span class="text-foreground">{t.demoSearch}</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<!-- Features Section -->
 	<section id="features" class="py-24 bg-surface border-y border-border">
 		<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -547,21 +623,44 @@ const response = await fetch('/api/v1/snippets', {
 						</li>
 					</ul>
 				</div>
-				<div class="rounded-xl border border-border bg-surface p-6">
-					<div class="space-y-4">
-						<div class="flex items-center gap-2 text-sm text-muted">
-							<FileCode class="h-4 w-4" />
-							<span>{t.supportedBlocks}</span>
-						</div>
-						<div class="grid grid-cols-2 gap-3">
-							{#each [t.markdown, t.code, t.images, t.files, t.tables, t.callouts, t.tasks, t.links] as block}
-								<div class="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
-									<div class="h-2 w-2 rounded-full bg-accent"></div>
-									<span class="text-foreground">{block}</span>
-								</div>
-							{/each}
+				<div class="space-y-6">
+					<!-- Supported blocks list -->
+					<div class="rounded-xl border border-border bg-surface p-6">
+						<div class="space-y-4">
+							<div class="flex items-center gap-2 text-sm text-muted">
+								<FileCode class="h-4 w-4" />
+								<span>{t.supportedBlocks}</span>
+							</div>
+							<div class="grid grid-cols-2 gap-3">
+								{#each [t.markdown, t.code, t.images, t.files, t.tables, t.callouts, t.tasks, t.links] as block}
+									<div class="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+										<div class="h-2 w-2 rounded-full bg-accent"></div>
+										<span class="text-foreground">{block}</span>
+									</div>
+								{/each}
+							</div>
 						</div>
 					</div>
+
+					<!-- Dashboard preview image (clickable for zoom) -->
+					<button
+						type="button"
+						onclick={() => { lightboxSrc = '/images/Dashboard.png'; lightboxOpen = true; }}
+						class="group relative rounded-xl border border-border overflow-hidden shadow-lg cursor-zoom-in w-full text-left transition-all hover:border-accent/50 hover:shadow-xl"
+					>
+						<img
+							src="/images/Dashboard.png"
+							alt="SnippetVault Dashboard"
+							class="w-full"
+							loading="lazy"
+						/>
+						<div class="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors flex items-center justify-center">
+							<div class="opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 rounded-lg px-3 py-1.5 text-sm text-foreground flex items-center gap-2">
+								<Search class="h-4 w-4" />
+								{lang === 'fr' ? 'Cliquer pour agrandir' : 'Click to enlarge'}
+							</div>
+						</div>
+					</button>
 				</div>
 			</div>
 		</div>
@@ -1058,6 +1157,33 @@ docker compose up -d
 		</div>
 	</footer>
 </div>
+
+<!-- Lightbox Modal -->
+{#if lightboxOpen}
+	<div
+		class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-zoom-out"
+		onclick={() => lightboxOpen = false}
+		onkeydown={(e) => e.key === 'Escape' && (lightboxOpen = false)}
+		role="button"
+		tabindex="0"
+	>
+		<button
+			type="button"
+			class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors p-2"
+			onclick={() => lightboxOpen = false}
+		>
+			<svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+			</svg>
+		</button>
+		<img
+			src={lightboxSrc}
+			alt="SnippetVault Dashboard - Full size"
+			class="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl"
+			onclick={(e) => e.stopPropagation()}
+		/>
+	</div>
+{/if}
 
 <style>
 	/* Smooth scrolling for anchor links */
