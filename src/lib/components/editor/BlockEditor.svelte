@@ -1442,42 +1442,49 @@
 </div>
 
 <style>
-	/* Table styles */
+	/* Table card wrapper in editor */
+	:global(.block-editor .tiptap .tableWrapper) {
+		background-color: var(--surface, #161b22);
+		border: 1px solid var(--border, #30363d);
+		border-radius: 0.5rem;
+		padding: 1rem;
+		margin: 1rem 0;
+		max-width: 900px;
+		overflow-x: auto;
+	}
+
 	:global(.block-editor .tiptap table),
 	:global(.block-editor .editor-table) {
 		border-collapse: collapse;
-		width: 100%;
-		margin: 1rem 0;
-		table-layout: fixed;
-		border: 2px solid var(--border, #30363d);
-		border-radius: 0.375rem;
-		overflow: hidden;
+		width: auto;
+		margin: 0;
+		table-layout: auto;
 	}
 
 	:global(.block-editor .tiptap th),
 	:global(.block-editor .tiptap td) {
 		border: 1px solid var(--border, #30363d);
-		padding: 0.625rem 0.875rem;
+		padding: 0.75rem 1rem;
 		text-align: left;
-		min-width: 100px;
+		min-width: 80px;
 		position: relative;
 		vertical-align: top;
 		font-size: 0.875rem;
 	}
 
 	:global(.block-editor .tiptap th) {
-		background-color: var(--surface, #161b22);
+		background-color: color-mix(in srgb, var(--surface, #161b22) 50%, var(--background, #0d1117));
 		font-weight: 600;
 		color: var(--foreground, #e6edf3);
 		border-bottom: 2px solid var(--border, #30363d);
 	}
 
 	:global(.block-editor .tiptap td) {
-		background-color: var(--background, #0d1117);
+		background-color: transparent;
 	}
 
 	:global(.block-editor .tiptap tr:hover td) {
-		background-color: var(--surface, #161b22);
+		background-color: color-mix(in srgb, var(--surface, #161b22) 30%, transparent);
 	}
 
 	:global(.block-editor .tiptap .selectedCell::after) {
@@ -1498,17 +1505,12 @@
 		background-color: var(--accent, #58a6ff);
 		cursor: col-resize;
 		opacity: 0;
+		transition: opacity 0.15s;
 	}
 
 	:global(.block-editor .tiptap table:hover .column-resize-handle),
 	:global(.block-editor .tiptap .column-resize-handle:hover) {
 		opacity: 1;
-	}
-
-	/* Table wrapper for horizontal scroll on small screens */
-	:global(.block-editor .tiptap .tableWrapper) {
-		overflow-x: auto;
-		margin: 1rem 0;
 	}
 
 	/* File block styles */

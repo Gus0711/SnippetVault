@@ -175,6 +175,76 @@ body {
 	opacity: 0.8;
 }
 
+/* TipTap table card wrapper */
+.tiptap .tableWrapper {
+	background-color: var(--sf);
+	border: 1px solid var(--bd);
+	border-radius: 0.5rem;
+	padding: 1rem;
+	margin: 1rem 0;
+	max-width: 900px;
+	overflow-x: auto;
+}
+
+.tiptap table {
+	border-collapse: collapse;
+	width: auto;
+	margin: 0;
+	table-layout: auto;
+}
+
+.tiptap th,
+.tiptap td {
+	border: 1px solid var(--bd);
+	padding: 0.75rem 1rem;
+	text-align: left;
+	min-width: 80px;
+	position: relative;
+	vertical-align: top;
+	font-size: 0.875rem;
+}
+
+.tiptap th {
+	background-color: color-mix(in srgb, var(--sf) 50%, var(--bg));
+	font-weight: 600;
+	color: var(--tx);
+	border-bottom: 2px solid var(--bd);
+}
+
+.tiptap td {
+	background-color: transparent;
+}
+
+.tiptap tr:hover td {
+	background-color: color-mix(in srgb, var(--sf) 30%, transparent);
+}
+
+.tiptap .selectedCell::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background-color: var(--ac);
+	opacity: 0.15;
+	pointer-events: none;
+}
+
+.tiptap .column-resize-handle {
+	position: absolute;
+	right: -2px;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background-color: var(--ac);
+	cursor: col-resize;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+
+.tiptap table:hover .column-resize-handle,
+.tiptap .column-resize-handle:hover {
+	opacity: 1;
+}
+
 /* Code block with language selector */
 .tiptap .code-block-wrapper {
 	position: relative;
@@ -432,6 +502,55 @@ body {
 .prose pre code {
 	background: none;
 	padding: 0;
+}
+
+/* Table styles for prose (view mode) */
+.prose table {
+	border-collapse: collapse;
+	width: auto;
+	max-width: 100%;
+	margin: 1rem 0;
+	font-size: 0.875rem;
+}
+
+.prose th,
+.prose td {
+	border: 1px solid var(--bd);
+	padding: 0.75rem 1rem;
+	text-align: left;
+	vertical-align: top;
+}
+
+.prose th {
+	background-color: var(--sf);
+	font-weight: 600;
+	color: var(--tx);
+}
+
+.prose td {
+	background-color: transparent;
+}
+
+.prose tr:hover td {
+	background-color: var(--sf);
+}
+
+/* Table card wrapper for prose */
+.prose .table-wrapper,
+.table-card {
+	background-color: var(--sf);
+	border: 1px solid var(--bd);
+	border-radius: 0.5rem;
+	padding: 1rem;
+	margin: 1rem 0;
+	max-width: 900px;
+	overflow-x: auto;
+}
+
+.prose .table-wrapper table,
+.table-card table {
+	margin: 0;
+	width: auto;
 }
 
 /* Code block collapse styles for editor */
