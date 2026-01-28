@@ -335,4 +335,19 @@
 	.prose-public :global(.table-wrapper table) {
 		margin: 0;
 	}
+
+	/* Rich text formatting */
+	.prose-public :global(u) {
+		text-decoration: underline;
+	}
+
+	.prose-public :global(s) {
+		text-decoration: line-through;
+	}
+
+	.prose-public :global(mark) {
+		border-radius: 0.15em;
+		padding: 0.1em 0.2em;
+		box-decoration-break: clone;
+	}
 </style>

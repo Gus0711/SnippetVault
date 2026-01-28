@@ -12,6 +12,9 @@
 	import { TableRow } from '@tiptap/extension-table-row';
 	import { TableCell } from '@tiptap/extension-table-cell';
 	import { TableHeader } from '@tiptap/extension-table-header';
+	import Underline from '@tiptap/extension-underline';
+	import Highlight from '@tiptap/extension-highlight';
+	import { TextStyle, Color } from '@tiptap/extension-text-style';
 	import { all, createLowlight } from 'lowlight';
 	import { FileBlock } from './FileBlock';
 	import SlashMenu from './SlashMenu.svelte';
@@ -29,7 +32,14 @@
 		Rows3,
 		Columns3,
 		Sparkles,
-		GripVertical
+		GripVertical,
+		Bold,
+		Italic,
+		Underline as UnderlineIcon,
+		Strikethrough,
+		Highlighter,
+		Palette,
+		Link as LinkIcon
 	} from 'lucide-svelte';
 	import { detectLanguage } from '$lib/utils/colors';
 
@@ -145,6 +155,38 @@
 	let showLinkPrompt = $state(false);
 	let linkUrl = $state('');
 	let linkText = $state('');
+
+	// Floating toolbar state
+	let showFloatingToolbar = $state(false);
+	let floatingToolbarPosition = $state({ x: 0, y: 0 });
+	let showTextColorMenu = $state(false);
+	let showHighlightColorMenu = $state(false);
+	let lastHighlightColor = $state('#fef08a'); // Default yellow
+
+	// Color palette (sober colors)
+	const textColors = [
+		{ id: 'default', color: null, label: 'Par defaut' },
+		{ id: 'red', color: '#ef4444', label: 'Rouge' },
+		{ id: 'orange', color: '#f97316', label: 'Orange' },
+		{ id: 'yellow', color: '#eab308', label: 'Jaune' },
+		{ id: 'green', color: '#22c55e', label: 'Vert' },
+		{ id: 'blue', color: '#3b82f6', label: 'Bleu' },
+		{ id: 'purple', color: '#a855f7', label: 'Violet' },
+		{ id: 'pink', color: '#ec4899', label: 'Rose' },
+		{ id: 'gray', color: '#6b7280', label: 'Gris' }
+	];
+
+	const highlightColors = [
+		{ id: 'none', color: null, label: 'Aucun' },
+		{ id: 'red', color: '#fecaca', label: 'Rouge' },
+		{ id: 'orange', color: '#fed7aa', label: 'Orange' },
+		{ id: 'yellow', color: '#fef08a', label: 'Jaune' },
+		{ id: 'green', color: '#bbf7d0', label: 'Vert' },
+		{ id: 'blue', color: '#bfdbfe', label: 'Bleu' },
+		{ id: 'purple', color: '#e9d5ff', label: 'Violet' },
+		{ id: 'pink', color: '#fbcfe8', label: 'Rose' },
+		{ id: 'gray', color: '#e5e7eb', label: 'Gris' }
+	];
 
 	// Common programming languages
 	const languages = [
@@ -941,7 +983,13 @@
 				TableRow,
 				TableHeader,
 				TableCell,
-				FileBlock
+				FileBlock,
+				Underline,
+				TextStyle,
+				Color,
+				Highlight.configure({
+					multicolor: true
+				})
 			],
 			content: blocksToContent(initialBlocks),
 			onUpdate: ({ editor: ed }) => {
@@ -1013,6 +1061,28 @@
 					currentCodeBlockLineCount = 0;
 					currentCodeBlockContent = '';
 				}
+
+				// Floating toolbar: show when text is selected (not in code block)
+				const { from, to, empty } = ed.state.selection;
+				if (!empty && !ed.isActive('codeBlock') && to - from > 0) {
+					const coords = ed.view.coordsAtPos(from);
+					const coordsEnd = ed.view.coordsAtPos(to);
+					const editorRect = element.getBoundingClientRect();
+
+					// Position toolbar above the selection, centered
+					const centerX = (coords.left + coordsEnd.left) / 2 - editorRect.left;
+					const topY = coords.top - editorRect.top - 44; // 44px above selection
+
+					floatingToolbarPosition = {
+						x: Math.max(0, centerX - 120), // Offset for toolbar width
+						y: Math.max(0, topY)
+					};
+					showFloatingToolbar = true;
+				} else {
+					showFloatingToolbar = false;
+					showTextColorMenu = false;
+					showHighlightColorMenu = false;
+				}
 			},
 			editorProps: {
 				attributes: {
@@ -1028,6 +1098,15 @@
 					if (event.altKey && event.key === 'ArrowDown') {
 						event.preventDefault();
 						moveBlockDown();
+						return true;
+					}
+
+					// Highlight shortcut: Ctrl+Shift+H
+					if (event.ctrlKey && event.shiftKey && event.key === 'H') {
+						event.preventDefault();
+						if (editor) {
+							editor.chain().focus().toggleHighlight({ color: lastHighlightColor }).run();
+						}
 						return true;
 					}
 
@@ -1342,6 +1421,148 @@
 		/>
 	{/if}
 
+	<!-- Floating formatting toolbar -->
+	{#if showFloatingToolbar && editor}
+		<div
+			class="floating-toolbar absolute z-50 flex items-center gap-0.5 p-1 bg-[#1c1c1c] border border-[#3a3a3a] rounded-lg shadow-xl"
+			style="left: {floatingToolbarPosition.x}px; top: {floatingToolbarPosition.y}px"
+		>
+			<!-- Bold -->
+			<button
+				type="button"
+				onclick={() => editor?.chain().focus().toggleBold().run()}
+				class="toolbar-btn {editor.isActive('bold') ? 'active' : ''}"
+				title="Gras (Ctrl+B)"
+			>
+				<Bold size={14} />
+			</button>
+
+			<!-- Italic -->
+			<button
+				type="button"
+				onclick={() => editor?.chain().focus().toggleItalic().run()}
+				class="toolbar-btn {editor.isActive('italic') ? 'active' : ''}"
+				title="Italique (Ctrl+I)"
+			>
+				<Italic size={14} />
+			</button>
+
+			<!-- Underline -->
+			<button
+				type="button"
+				onclick={() => editor?.chain().focus().toggleUnderline().run()}
+				class="toolbar-btn {editor.isActive('underline') ? 'active' : ''}"
+				title="Souligne (Ctrl+U)"
+			>
+				<UnderlineIcon size={14} />
+			</button>
+
+			<!-- Strike -->
+			<button
+				type="button"
+				onclick={() => editor?.chain().focus().toggleStrike().run()}
+				class="toolbar-btn {editor.isActive('strike') ? 'active' : ''}"
+				title="Barre"
+			>
+				<Strikethrough size={14} />
+			</button>
+
+			<div class="w-px h-4 bg-[#3a3a3a] mx-0.5"></div>
+
+			<!-- Text color -->
+			<div class="relative">
+				<button
+					type="button"
+					onclick={() => { showTextColorMenu = !showTextColorMenu; showHighlightColorMenu = false; }}
+					class="toolbar-btn {editor.isActive('textStyle') ? 'active' : ''}"
+					title="Couleur du texte"
+				>
+					<Palette size={14} />
+				</button>
+				{#if showTextColorMenu}
+					<div class="absolute top-full left-0 mt-1 p-1.5 bg-[#1c1c1c] border border-[#3a3a3a] rounded-lg shadow-xl grid grid-cols-3 gap-1 min-w-[100px]">
+						{#each textColors as tc (tc.id)}
+							<button
+								type="button"
+								onclick={() => {
+									if (tc.color) {
+										editor?.chain().focus().setColor(tc.color).run();
+									} else {
+										editor?.chain().focus().unsetColor().run();
+									}
+									showTextColorMenu = false;
+								}}
+								class="w-6 h-6 rounded flex items-center justify-center hover:ring-2 hover:ring-white/30 transition-all"
+								style="background-color: {tc.color || 'transparent'}; {tc.color ? '' : 'border: 1px dashed #666;'}"
+								title={tc.label}
+							>
+								{#if !tc.color}
+									<span class="text-[10px] text-gray-400">x</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<!-- Highlight -->
+			<div class="relative">
+				<button
+					type="button"
+					onclick={() => { showHighlightColorMenu = !showHighlightColorMenu; showTextColorMenu = false; }}
+					class="toolbar-btn {editor.isActive('highlight') ? 'active' : ''}"
+					title="Surlignage (Ctrl+Shift+H)"
+				>
+					<Highlighter size={14} />
+				</button>
+				{#if showHighlightColorMenu}
+					<div class="absolute top-full left-0 mt-1 p-1.5 bg-[#1c1c1c] border border-[#3a3a3a] rounded-lg shadow-xl grid grid-cols-3 gap-1 min-w-[100px]">
+						{#each highlightColors as hc (hc.id)}
+							<button
+								type="button"
+								onclick={() => {
+									if (hc.color) {
+										editor?.chain().focus().toggleHighlight({ color: hc.color }).run();
+										lastHighlightColor = hc.color;
+									} else {
+										editor?.chain().focus().unsetHighlight().run();
+									}
+									showHighlightColorMenu = false;
+								}}
+								class="w-6 h-6 rounded flex items-center justify-center hover:ring-2 hover:ring-white/30 transition-all"
+								style="background-color: {hc.color || 'transparent'}; {hc.color ? '' : 'border: 1px dashed #666;'}"
+								title={hc.label}
+							>
+								{#if !hc.color}
+									<span class="text-[10px] text-gray-400">x</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<div class="w-px h-4 bg-[#3a3a3a] mx-0.5"></div>
+
+			<!-- Link -->
+			<button
+				type="button"
+				onclick={() => {
+					showFloatingToolbar = false;
+					const { from, to } = editor!.state.selection;
+					const selectedText = editor!.state.doc.textBetween(from, to);
+					linkText = selectedText;
+					linkUrl = editor!.isActive('link') ? editor!.getAttributes('link').href : '';
+					showLinkPrompt = true;
+				}}
+				class="toolbar-btn {editor.isActive('link') ? 'active' : ''}"
+				title="Lien"
+			>
+				<LinkIcon size={14} />
+			</button>
+		</div>
+	{/if}
+
 	{#if uploading}
 		<div class="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
 			<div class="flex items-center gap-2 text-sm text-muted">
@@ -1442,6 +1663,43 @@
 </div>
 
 <style>
+	/* Floating toolbar styles */
+	.floating-toolbar {
+		animation: toolbar-fade-in 0.15s ease-out;
+	}
+
+	@keyframes toolbar-fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.toolbar-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 4px;
+		color: #999;
+		transition: all 0.1s;
+	}
+
+	.toolbar-btn:hover {
+		background-color: #333;
+		color: #fff;
+	}
+
+	.toolbar-btn.active {
+		background-color: #444;
+		color: #fff;
+	}
+
 	/* Table card wrapper in editor */
 	:global(.block-editor .tiptap .tableWrapper) {
 		background-color: var(--surface, #161b22);

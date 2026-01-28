@@ -175,6 +175,30 @@ body {
 	opacity: 0.8;
 }
 
+/* Rich text formatting */
+.tiptap u,
+.prose u {
+	text-decoration: underline;
+}
+
+.tiptap s,
+.prose s {
+	text-decoration: line-through;
+}
+
+.tiptap mark,
+.prose mark {
+	border-radius: 0.15em;
+	padding: 0.1em 0.2em;
+	box-decoration-break: clone;
+}
+
+/* Ensure text colors are preserved */
+.tiptap span[style*="color"],
+.prose span[style*="color"] {
+	/* Allow inline styles to take precedence */
+}
+
 /* TipTap table card wrapper */
 .tiptap .tableWrapper {
 	background-color: var(--sf);
