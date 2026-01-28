@@ -1,6 +1,10 @@
 <script lang="ts">
 	import SnippetTable from '$lib/components/SnippetTable.svelte';
-	import { Plus, FileCode, Globe, FileText } from 'lucide-svelte';
+	import StatsCards from '$lib/components/stats/StatsCards.svelte';
+	import ActivityHeatmap from '$lib/components/stats/ActivityHeatmap.svelte';
+	import LanguageDonut from '$lib/components/stats/LanguageDonut.svelte';
+	import TopTagsBar from '$lib/components/stats/TopTagsBar.svelte';
+	import { Plus, FileText } from 'lucide-svelte';
 
 	let { data } = $props();
 </script>
@@ -18,20 +22,28 @@
 		</a>
 	</div>
 
-	<!-- Stats -->
+	<!-- Stats Cards -->
+	<StatsCards stats={data.stats} />
+
+	<!-- Charts -->
 	{#if data.stats.total > 0}
-		<div class="flex items-center gap-3 mb-3 text-[10px]">
-			<div class="flex items-center gap-1 text-muted">
-				<FileCode size={12} strokeWidth={1.5} />
-				<span><strong class="text-foreground font-medium">{data.stats.total}</strong> total</span>
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
+			<!-- Heatmap (2 columns) -->
+			<div class="lg:col-span-2 border border-border rounded p-3 bg-surface/30">
+				<h3 class="text-[11px] font-medium text-muted mb-2">Activite</h3>
+				<ActivityHeatmap data={data.activityData} />
 			</div>
-			<div class="flex items-center gap-1 text-muted">
-				<Globe size={12} strokeWidth={1.5} class="text-accent" />
-				<span><strong class="text-foreground font-medium">{data.stats.published}</strong> publies</span>
-			</div>
-			<div class="flex items-center gap-1 text-muted">
-				<FileText size={12} strokeWidth={1.5} />
-				<span><strong class="text-foreground font-medium">{data.stats.drafts}</strong> brouillons</span>
+
+			<!-- Donut + Tags (1 column, stacked) -->
+			<div class="space-y-3">
+				<div class="border border-border rounded p-3 bg-surface/30">
+					<h3 class="text-[11px] font-medium text-muted mb-2">Langages</h3>
+					<LanguageDonut data={data.languageStats} />
+				</div>
+				<div class="border border-border rounded p-3 bg-surface/30">
+					<h3 class="text-[11px] font-medium text-muted mb-2">Tags</h3>
+					<TopTagsBar data={data.topTags} />
+				</div>
 			</div>
 		</div>
 	{/if}
