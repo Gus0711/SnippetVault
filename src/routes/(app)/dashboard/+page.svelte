@@ -1,7 +1,6 @@
 <script lang="ts">
 	import SnippetTable from '$lib/components/SnippetTable.svelte';
 	import StatsCards from '$lib/components/stats/StatsCards.svelte';
-	import ActivityHeatmap from '$lib/components/stats/ActivityHeatmap.svelte';
 	import LanguageDonut from '$lib/components/stats/LanguageDonut.svelte';
 	import TopTagsBar from '$lib/components/stats/TopTagsBar.svelte';
 	import { Plus, FileText } from 'lucide-svelte';
@@ -26,24 +25,15 @@
 	<StatsCards stats={data.stats} />
 
 	<!-- Charts -->
-	{#if data.stats.total > 0}
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
-			<!-- Heatmap (2 columns) -->
-			<div class="lg:col-span-2 border border-border rounded p-3 bg-surface/30">
-				<h3 class="text-[11px] font-medium text-muted mb-2">Activite</h3>
-				<ActivityHeatmap data={data.activityData} />
+	{#if data.stats.total > 0 && (data.languageStats.length > 0 || data.topTags.length > 0)}
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+			<div class="border border-border rounded p-3 bg-surface/30">
+				<h3 class="text-[11px] font-medium text-muted mb-2">Langages</h3>
+				<LanguageDonut data={data.languageStats} />
 			</div>
-
-			<!-- Donut + Tags (1 column, stacked) -->
-			<div class="space-y-3">
-				<div class="border border-border rounded p-3 bg-surface/30">
-					<h3 class="text-[11px] font-medium text-muted mb-2">Langages</h3>
-					<LanguageDonut data={data.languageStats} />
-				</div>
-				<div class="border border-border rounded p-3 bg-surface/30">
-					<h3 class="text-[11px] font-medium text-muted mb-2">Tags</h3>
-					<TopTagsBar data={data.topTags} />
-				</div>
+			<div class="border border-border rounded p-3 bg-surface/30">
+				<h3 class="text-[11px] font-medium text-muted mb-2">Tags</h3>
+				<TopTagsBar data={data.topTags} />
 			</div>
 		</div>
 	{/if}

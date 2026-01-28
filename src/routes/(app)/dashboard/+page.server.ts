@@ -67,23 +67,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const favoritesCount = userSnippets.filter((s) => s.isFavorite).length;
 	const collectionsCount = allCollections.length;
 
-	// Activity heatmap data (last 365 days)
-	const oneYearAgo = new Date();
-	oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-	const oneYearAgoTimestamp = Math.floor(oneYearAgo.getTime() / 1000);
-
-	const activityData = sqlite
-		.prepare(
-			`
-		SELECT date(created_at, 'unixepoch') as day, COUNT(*) as count
-		FROM snippets
-		WHERE author_id = ? AND created_at >= ?
-		GROUP BY day
-		ORDER BY day
-	`
-		)
-		.all(userId, oneYearAgoTimestamp) as { day: string; count: number }[];
-
 	// Language distribution (count distinct snippets per language)
 	const languageStats = sqlite
 		.prepare(
@@ -126,7 +109,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 			favorites: favoritesCount,
 			collections: collectionsCount
 		},
-		activityData,
 		languageStats,
 		topTags
 	};
