@@ -19,13 +19,5 @@ services:
       - AUTO_CREATE_ADMIN=${AUTO_CREATE_ADMIN:-true}
     restart: unless-stopped
 
-  mcp-server:
-    build: ./mcp-server
-    ports:
-      - "3002:3002"
-    environment:
-      - SNIPPETVAULT_URL=http://snippetvault:3000
-      - PORT=3002
-    depends_on:
-      - snippetvault
-    restart: unless-stopped
+# MCP Server is optional - see docker-compose.mcp.yml
+# To enable: docker compose -f docker-compose.yml -f docker-compose.mcp.yml up -d

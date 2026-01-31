@@ -1,0 +1,21 @@
+# MCP Server for Claude AI integration
+# Usage: docker compose -f docker-compose.yml -f docker-compose.mcp.yml up -d
+#
+# This service provides an MCP (Model Context Protocol) server that allows
+# Claude AI to interact with your SnippetVault instance.
+#
+# Prerequisites:
+# - Set SNIPPETVAULT_API_KEY in your .env file with a valid API key from SnippetVault
+
+services:
+  mcp-server:
+    build: ./mcp-server
+    ports:
+      - "3002:3002"
+    environment:
+      - SNIPPETVAULT_URL=http://snippetvault:3000
+      - SNIPPETVAULT_API_KEY=${SNIPPETVAULT_API_KEY:-}
+      - PORT=3002
+    depends_on:
+      - snippetvault
+    restart: unless-stopped
