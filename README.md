@@ -75,6 +75,9 @@ docker compose up -d
 # Ouvrir http://localhost:3000
 ```
 
+> **Note :** Le premier build compile des modules natifs et peut prendre quelques minutes.
+> Prerequis : ~2 Go de RAM disponible pendant le build.
+
 **Compte admin par defaut :**
 - Email : `admin@snippetvault.local`
 - Mot de passe : `admin`
