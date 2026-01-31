@@ -69,15 +69,17 @@ SnippetVault est un gestionnaire de snippets de code open source et auto-heberge
 git clone https://github.com/Gus0711/SnippetVault.git
 cd SnippetVault
 
-# Configurer
-cp .env.example .env
-# Editer .env avec vos valeurs (SECRET_KEY, ORIGIN)
-
-# Lancer
+# Lancer (aucune configuration requise pour tester)
 docker compose up -d
 
 # Ouvrir http://localhost:3000
 ```
+
+**Compte admin par defaut :**
+- Email : `admin@snippetvault.local`
+- Mot de passe : `admin`
+
+> **Important :** Changez le mot de passe apres la premiere connexion !
 
 ### Sans Docker
 
@@ -100,15 +102,28 @@ npm run dev
 
 ## Configuration
 
-Variables d'environnement (`.env`) :
+Le fichier `.env` est **optionnel** pour un test local. Le `docker-compose.yml` a des valeurs par defaut.
+
+Pour personnaliser, copiez `.env.example` vers `.env` :
 
 ```env
-DATABASE_URL=file:./data/snippetvault.db
-UPLOAD_DIR=./data/uploads
-UPLOAD_MAX_SIZE=52428800
 SECRET_KEY=votre-cle-secrete-aleatoire
-ORIGIN=http://localhost:5173
+ORIGIN=http://localhost:3000
 ```
+
+### Acces reseau / Production
+
+Si vous accedez depuis une autre machine (homelab, serveur), changez `ORIGIN` :
+
+```env
+# Acces via IP locale
+ORIGIN=http://192.168.1.100:3000
+
+# Acces via domaine
+ORIGIN=https://snippets.example.com
+```
+
+> **Note :** `ORIGIN` doit correspondre a l'URL utilisee dans le navigateur, sinon les cookies de session ne fonctionneront pas.
 
 ## Documentation
 

@@ -61,32 +61,26 @@ npm run dev
 
 L'application est accessible sur `http://localhost:5173`.
 
-### 6. Configuration initiale
+### 6. Se connecter
 
-1. Ouvrir `http://localhost:5173/auth/setup`
-2. Creer le compte administrateur
-3. Se connecter
+Un compte admin est cree automatiquement au premier demarrage :
+
+- **URL** : `http://localhost:5173`
+- **Email** : `admin@snippetvault.local`
+- **Mot de passe** : `admin`
+
+> **Note :** Pour creer manuellement le compte admin via `/auth/setup`,
+> ajoutez `AUTO_CREATE_ADMIN=false` dans votre `.env`.
 
 ---
 
 ## Installation Docker (production)
 
-### 1. Cloner et configurer
+### 1. Cloner le repository
 
 ```bash
 git clone https://github.com/user/snippetvault.git
 cd snippetvault
-cp .env.example .env
-```
-
-Editer `.env` pour la production :
-
-```env
-DATABASE_URL=file:./data/snippetvault.db
-UPLOAD_DIR=./data/uploads
-UPLOAD_MAX_SIZE=52428800
-SECRET_KEY=une-longue-cle-aleatoire-tres-securisee
-ORIGIN=https://votre-domaine.com
 ```
 
 ### 2. Lancer avec Docker Compose
@@ -95,6 +89,9 @@ ORIGIN=https://votre-domaine.com
 docker compose up -d
 ```
 
+> **Note :** Le premier build peut prendre plusieurs minutes car il compile `better-sqlite3`.
+> Prerequis : ~2 Go de RAM disponible pendant le build.
+
 ### 3. Verifier le statut
 
 ```bash
@@ -102,10 +99,56 @@ docker compose ps
 docker compose logs -f snippetvault
 ```
 
-### 4. Configuration initiale
+### 4. Se connecter
 
-1. Ouvrir `https://votre-domaine.com/auth/setup`
-2. Creer le compte administrateur
+Un compte admin est cree automatiquement :
+
+- **URL** : `http://localhost:3000`
+- **Email** : `admin@snippetvault.local`
+- **Mot de passe** : `admin`
+
+> **Important :** Changez le mot de passe apres la premiere connexion !
+
+### 5. Configuration personnalisee (optionnel)
+
+Pour personnaliser, creez un fichier `.env` :
+
+```bash
+cp .env.example .env
+```
+
+Editer `.env` selon vos besoins :
+
+```env
+# Cle secrete (obligatoire en production)
+SECRET_KEY=une-longue-cle-aleatoire-tres-securisee
+
+# URL d'acces (doit correspondre a l'URL dans le navigateur)
+ORIGIN=https://votre-domaine.com
+```
+
+### Acces reseau
+
+Si vous accedez depuis une autre machine sur le reseau, vous devez changer `ORIGIN` :
+
+```env
+# Acces via IP locale
+ORIGIN=http://192.168.1.100:3000
+
+# Acces via nom de domaine
+ORIGIN=https://snippets.example.com
+```
+
+> **Important :** Si `ORIGIN` ne correspond pas a l'URL utilisee dans le navigateur,
+> les cookies de session ne fonctionneront pas et vous ne pourrez pas vous connecter.
+
+### Desactiver l'admin par defaut
+
+Si vous preferez creer manuellement le compte admin via `/auth/setup` :
+
+```env
+AUTO_CREATE_ADMIN=false
+```
 
 ---
 
