@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     api_key TEXT NOT NULL UNIQUE,
     role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin', 'user')),
     theme_preference TEXT NOT NULL DEFAULT 'system' CHECK (theme_preference IN ('light', 'dark', 'system')),
+    github_token TEXT,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );
@@ -60,6 +61,8 @@ CREATE TABLE IF NOT EXISTS snippets (
     public_theme TEXT NOT NULL DEFAULT 'github-dark',
     public_show_description INTEGER NOT NULL DEFAULT 1,
     public_show_attachments INTEGER NOT NULL DEFAULT 1,
+    gist_id TEXT,
+    gist_url TEXT,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );

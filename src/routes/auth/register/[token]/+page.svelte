@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	let { data, form } = $props();
 	let loading = $state(false);
@@ -7,6 +8,9 @@
 
 <div class="min-h-screen flex items-center justify-center bg-background">
 	<div class="w-full max-w-sm">
+		<div class="flex flex-col items-center mb-8">
+			<img src="/images/logo-full.png" alt="SnippetVault" class="h-16 mb-4" />
+		</div>
 		<h1 class="text-xl font-semibold text-foreground mb-2">Inscription</h1>
 		<p class="text-sm text-muted mb-6">Invitation pour {data.email}</p>
 
@@ -14,9 +18,13 @@
 			method="POST"
 			use:enhance={() => {
 				loading = true;
-				return async ({ update }) => {
+				return async ({ result, update }) => {
 					loading = false;
-					await update();
+					if (result.type === 'redirect') {
+						goto(result.location);
+					} else {
+						await update();
+					}
 				};
 			}}
 			class="space-y-4"

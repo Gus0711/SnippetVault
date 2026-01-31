@@ -11,6 +11,12 @@ services:
       - UPLOAD_MAX_SIZE=52428800
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - ORIGIN=${ORIGIN:-http://localhost:3000}
+      # Set to 'true' to show landing page (for promo site)
+      # Default: redirect to login/dashboard
+      - SHOW_LANDING_PAGE=${SHOW_LANDING_PAGE:-false}
+      # Set to 'false' to disable auto-creation of default admin
+      # Default admin: admin@snippetvault.local / admin
+      - AUTO_CREATE_ADMIN=${AUTO_CREATE_ADMIN:-true}
     restart: unless-stopped
 
   mcp-server:

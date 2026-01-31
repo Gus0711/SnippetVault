@@ -12,12 +12,38 @@ import {
 
 const UPLOAD_DIR = env.UPLOAD_DIR || './data/uploads';
 
-// Rebuild FTS index on server startup (skip during build)
+// Initialize on server startup (skip during build)
 if (!building) {
-	const { rebuildFTSIndex } = await import('$lib/server/db');
+	const { db, users, rebuildFTSIndex } = await import('$lib/server/db');
+	const { hashPassword, generateApiKey, generateId } = await import('$lib/server/auth/password');
+
+	// Rebuild FTS index
 	console.log('[FTS] Rebuilding search index...');
 	rebuildFTSIndex();
 	console.log('[FTS] Search index ready');
+
+	// Create default admin if no users exist and AUTO_CREATE_ADMIN is enabled
+	const autoCreateAdmin = env.AUTO_CREATE_ADMIN !== 'false'; // true by default
+	if (autoCreateAdmin) {
+		const existingUsers = await db.select().from(users).limit(1).all();
+		if (existingUsers.length === 0) {
+			console.log('[AUTH] No users found, creating default admin...');
+			const adminUser = {
+				id: generateId(),
+				email: 'admin@snippetvault.local',
+				passwordHash: hashPassword('admin'),
+				name: 'Admin',
+				apiKey: generateApiKey(),
+				role: 'admin' as const,
+				themePreference: 'system' as const
+			};
+			await db.insert(users).values(adminUser);
+			console.log('[AUTH] Default admin created:');
+			console.log('[AUTH]   Email: admin@snippetvault.local');
+			console.log('[AUTH]   Password: admin');
+			console.log('[AUTH]   WARNING: Change this password after first login!');
+		}
+	}
 }
 
 // MIME types for uploaded files
