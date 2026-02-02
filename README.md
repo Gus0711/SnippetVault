@@ -65,18 +65,12 @@ SnippetVault est un gestionnaire de snippets de code open source et auto-heberge
 ### Avec Docker (recommande)
 
 ```bash
-# Cloner le repository
 git clone https://github.com/Gus0711/SnippetVault.git
 cd SnippetVault
-
-# Lancer (aucune configuration requise pour tester)
 docker compose up -d
-
-# Ouvrir http://localhost:3000
 ```
 
-> **Note :** Le premier build compile des modules natifs et peut prendre quelques minutes.
-> Prerequis : ~2 Go de RAM disponible pendant le build.
+L'application est accessible sur `http://localhost:3000`.
 
 **Compte admin par defaut :**
 - Email : `admin@snippetvault.local`
@@ -84,39 +78,27 @@ docker compose up -d
 
 > **Important :** Changez le mot de passe apres la premiere connexion !
 
-### Sans Docker
+> **Note :** Le premier build compile des modules natifs (~2-5 min, ~2 Go RAM).
+
+### Configuration optionnelle
+
+La `SECRET_KEY` est **automatiquement generee** au premier lancement et persistee dans `data/.secret_key`. Aucune configuration n'est requise pour demarrer.
+
+Pour personnaliser, creez un fichier `.env` :
 
 ```bash
-# Cloner et installer
-git clone https://github.com/Gus0711/SnippetVault.git
-cd SnippetVault
-npm install
-
-# Configurer
 cp .env.example .env
-mkdir -p data/uploads
-
-# Base de donnees
-npm run db:migrate
-
-# Lancer en developpement
-npm run dev
 ```
 
-## Configuration
-
-Le fichier `.env` est **optionnel** pour un test local. Le `docker-compose.yml` a des valeurs par defaut.
-
-Pour personnaliser, copiez `.env.example` vers `.env` :
-
-```env
-SECRET_KEY=votre-cle-secrete-aleatoire
-ORIGIN=http://localhost:3000
-```
+| Variable | Defaut | Description |
+|----------|--------|-------------|
+| `SECRET_KEY` | Auto-generee | Cle de chiffrement des sessions |
+| `ORIGIN` | `http://localhost:3000` | URL d'acces (important pour les cookies) |
+| `UPLOAD_MAX_SIZE` | `52428800` (50 Mo) | Taille max des uploads |
 
 ### Acces reseau / Production
 
-Si vous accedez depuis une autre machine (homelab, serveur), changez `ORIGIN` :
+Si vous accedez depuis une autre machine, modifiez `ORIGIN` dans `.env` :
 
 ```env
 # Acces via IP locale
@@ -126,7 +108,22 @@ ORIGIN=http://192.168.1.100:3000
 ORIGIN=https://snippets.example.com
 ```
 
-> **Note :** `ORIGIN` doit correspondre a l'URL utilisee dans le navigateur, sinon les cookies de session ne fonctionneront pas.
+> **Note :** `ORIGIN` doit correspondre a l'URL dans le navigateur, sinon les cookies de session ne fonctionneront pas.
+
+### Sans Docker
+
+```bash
+git clone https://github.com/Gus0711/SnippetVault.git
+cd SnippetVault
+npm install
+
+cp .env.example .env
+# Editer .env et definir SECRET_KEY
+
+mkdir -p data/uploads
+npm run db:migrate
+npm run dev
+```
 
 ## Documentation
 

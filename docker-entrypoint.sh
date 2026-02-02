@@ -1,11 +1,30 @@
 #!/bin/sh
 set -e
 
-DB_PATH="/app/data/snippetvault.db"
-SCHEMA_PATH="/app/schema.sql"
-
 # Create data directory if it doesn't exist
 mkdir -p /app/data/uploads
+
+# ============================================
+# SECRET_KEY auto-generation
+# ============================================
+if [ -z "$SECRET_KEY" ]; then
+    SECRET_KEY_FILE="/app/data/.secret_key"
+    if [ -f "$SECRET_KEY_FILE" ]; then
+        export SECRET_KEY=$(cat "$SECRET_KEY_FILE")
+        echo "[AUTH] SECRET_KEY loaded from $SECRET_KEY_FILE"
+    else
+        export SECRET_KEY=$(openssl rand -hex 32)
+        echo "$SECRET_KEY" > "$SECRET_KEY_FILE"
+        chmod 600 "$SECRET_KEY_FILE"
+        echo "[AUTH] SECRET_KEY auto-generated and saved to $SECRET_KEY_FILE"
+    fi
+fi
+
+# ============================================
+# Database initialization
+# ============================================
+DB_PATH="/app/data/snippetvault.db"
+SCHEMA_PATH="/app/schema.sql"
 
 # Check if database exists and has tables
 if [ ! -f "$DB_PATH" ]; then

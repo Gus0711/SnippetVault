@@ -8,8 +8,10 @@ services:
     environment:
       - DATABASE_URL=file:/app/data/snippetvault.db
       - UPLOAD_DIR=/app/data/uploads
-      - UPLOAD_MAX_SIZE=52428800
-      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-52428800}
+      # SECRET_KEY is auto-generated on first launch if not set
+      # To use your own key, set it in .env or here
+      - SECRET_KEY=${SECRET_KEY:-}
       - ORIGIN=${ORIGIN:-http://localhost:3000}
       # Set to 'true' to show landing page (for promo site)
       # Default: redirect to login/dashboard

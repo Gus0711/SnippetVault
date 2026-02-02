@@ -14,8 +14,8 @@ RUN npm prune --production
 FROM node:20-alpine
 WORKDIR /app
 
-# Install sqlite3 for database initialization
-RUN apk add --no-cache sqlite
+# Install sqlite3 for database initialization and openssl for SECRET_KEY generation
+RUN apk add --no-cache sqlite openssl
 
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
