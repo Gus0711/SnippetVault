@@ -7,11 +7,10 @@ const config = {
 		alias: {
 			$components: 'src/lib/components'
 		},
-		// Disable CSRF origin check for self-hosted deployments
-		// In self-hosted scenarios, the origin is not known in advance
-		// (users may access via localhost, IP, or custom domain)
+		// CSRF origin check is enabled by default (secure)
+		// Set DISABLE_CSRF=true to disable (auto-set when ORIGIN is not configured)
 		csrf: {
-			checkOrigin: false
+			checkOrigin: process.env.DISABLE_CSRF !== 'true'
 		}
 	}
 };

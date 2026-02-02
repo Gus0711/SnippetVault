@@ -21,11 +21,16 @@ if [ -z "$SECRET_KEY" ]; then
 fi
 
 # ============================================
-# ORIGIN default (for SvelteKit)
+# ORIGIN and CSRF configuration
 # ============================================
 if [ -z "$ORIGIN" ]; then
+    # No ORIGIN configured: use permissive defaults for easy setup
     export ORIGIN="http://0.0.0.0:3000"
-    echo "[APP] ORIGIN not set, using default: $ORIGIN"
+    export DISABLE_CSRF="true"
+    echo "[APP] ORIGIN not set, using default: $ORIGIN (CSRF check disabled)"
+else
+    # ORIGIN configured: keep CSRF enabled for security
+    echo "[APP] ORIGIN set to: $ORIGIN (CSRF check enabled)"
 fi
 
 # ============================================
