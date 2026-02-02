@@ -111,21 +111,22 @@ Un compte admin est cree automatiquement :
 
 ### 5. Configuration personnalisee (optionnel)
 
-Pour personnaliser, creez un fichier `.env` :
+La `SECRET_KEY` est **automatiquement generee** au premier lancement et persistee dans `data/.secret_key`. Aucune configuration n'est requise pour demarrer.
+
+Pour personnaliser d'autres options, creez un fichier `.env` :
 
 ```bash
 cp .env.example .env
 ```
 
-Editer `.env` selon vos besoins :
+Variables disponibles :
 
-```env
-# Cle secrete (obligatoire en production)
-SECRET_KEY=une-longue-cle-aleatoire-tres-securisee
-
-# URL d'acces (doit correspondre a l'URL dans le navigateur)
-ORIGIN=https://votre-domaine.com
-```
+| Variable | Defaut | Description |
+|----------|--------|-------------|
+| `SECRET_KEY` | Auto-generee | Cle de chiffrement des sessions |
+| `ORIGIN` | `http://localhost:3000` | URL d'acces (important pour les cookies) |
+| `UPLOAD_MAX_SIZE` | `52428800` (50 Mo) | Taille max des uploads |
+| `AUTO_CREATE_ADMIN` | `true` | Creer un admin par defaut |
 
 ### Acces reseau
 
@@ -165,10 +166,11 @@ services:
     volumes:
       - ./data:/app/data
     environment:
-      - DATABASE_URL=file:./data/snippetvault.db
-      - UPLOAD_DIR=./data/uploads
-      - SECRET_KEY=${SECRET_KEY}
-      - ORIGIN=${ORIGIN}
+      - DATABASE_URL=file:/app/data/snippetvault.db
+      - UPLOAD_DIR=/app/data/uploads
+      # SECRET_KEY is auto-generated if not set
+      - SECRET_KEY=${SECRET_KEY:-}
+      - ORIGIN=${ORIGIN:-http://localhost:3000}
     restart: unless-stopped
 ```
 
