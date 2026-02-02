@@ -5,24 +5,21 @@ services:
       - "3000:3000"
     volumes:
       - ./data:/app/data
+    # Optional .env file for custom configuration
+    # If not present, defaults are used (SECRET_KEY auto-generated, CSRF disabled)
+    env_file:
+      - path: .env
+        required: false
     environment:
+      # Fixed values (not user-configurable)
       - DATABASE_URL=file:/app/data/snippetvault.db
       - UPLOAD_DIR=/app/data/uploads
-      - UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-52428800}
-      # SECRET_KEY is auto-generated on first launch if not set
-      - SECRET_KEY=${SECRET_KEY:-}
-      # ORIGIN is optional - app works without it for basic/local usage
-      # Set it in .env for production (e.g., https://your-domain.com)
-      - ORIGIN=${ORIGIN:-}
-      # DISABLE_CSRF is auto-set to 'true' when ORIGIN is not configured
-      # When ORIGIN is set, CSRF protection remains enabled (secure)
-      - DISABLE_CSRF=${DISABLE_CSRF:-}
-      # Set to 'true' to show landing page (for promo site)
-      # Default: redirect to login/dashboard
-      - SHOW_LANDING_PAGE=${SHOW_LANDING_PAGE:-false}
-      # Set to 'false' to disable auto-creation of default admin
-      # Default admin: admin@snippetvault.local / admin
-      - AUTO_CREATE_ADMIN=${AUTO_CREATE_ADMIN:-true}
+      # Configurable via .env file:
+      # - SECRET_KEY: auto-generated if not set
+      # - ORIGIN: set for production (enables CSRF protection)
+      # - UPLOAD_MAX_SIZE: default 52428800 (50MB)
+      # - SHOW_LANDING_PAGE: default false
+      # - AUTO_CREATE_ADMIN: default true (admin@snippetvault.local / admin)
     restart: unless-stopped
 
 # MCP Server is optional - see docker-compose.mcp.yml

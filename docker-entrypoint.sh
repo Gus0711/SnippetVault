@@ -34,6 +34,13 @@ else
 fi
 
 # ============================================
+# Default values for optional variables
+# ============================================
+export UPLOAD_MAX_SIZE="${UPLOAD_MAX_SIZE:-52428800}"
+export SHOW_LANDING_PAGE="${SHOW_LANDING_PAGE:-false}"
+export AUTO_CREATE_ADMIN="${AUTO_CREATE_ADMIN:-true}"
+
+# ============================================
 # Database initialization
 # ============================================
 DB_PATH="/app/data/snippetvault.db"
