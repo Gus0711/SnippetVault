@@ -21,6 +21,14 @@ if [ -z "$SECRET_KEY" ]; then
 fi
 
 # ============================================
+# ORIGIN default (for SvelteKit)
+# ============================================
+if [ -z "$ORIGIN" ]; then
+    export ORIGIN="http://0.0.0.0:3000"
+    echo "[APP] ORIGIN not set, using default: $ORIGIN"
+fi
+
+# ============================================
 # Database initialization
 # ============================================
 DB_PATH="/app/data/snippetvault.db"

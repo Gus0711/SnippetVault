@@ -82,7 +82,10 @@ L'application est accessible sur `http://localhost:3000`.
 
 ### Configuration optionnelle
 
-La `SECRET_KEY` est **automatiquement generee** au premier lancement et persistee dans `data/.secret_key`. Aucune configuration n'est requise pour demarrer.
+L'application fonctionne **sans aucune configuration**. Les valeurs par defaut sont :
+
+- `SECRET_KEY` : auto-generee au premier lancement (persistee dans `data/.secret_key`)
+- `ORIGIN` : non requis pour un usage local ou reseau basique
 
 Pour personnaliser, creez un fichier `.env` :
 
@@ -93,22 +96,16 @@ cp .env.example .env
 | Variable | Defaut | Description |
 |----------|--------|-------------|
 | `SECRET_KEY` | Auto-generee | Cle de chiffrement des sessions |
-| `ORIGIN` | `http://localhost:3000` | URL d'acces (important pour les cookies) |
+| `ORIGIN` | Non requis | URL de production (ex: `https://snippets.example.com`) |
 | `UPLOAD_MAX_SIZE` | `52428800` (50 Mo) | Taille max des uploads |
 
-### Acces reseau / Production
+### Production avec domaine personnalise
 
-Si vous accedez depuis une autre machine, modifiez `ORIGIN` dans `.env` :
+Pour un deploiement en production avec HTTPS et un domaine, definissez `ORIGIN` :
 
 ```env
-# Acces via IP locale
-ORIGIN=http://192.168.1.100:3000
-
-# Acces via domaine
 ORIGIN=https://snippets.example.com
 ```
-
-> **Note :** `ORIGIN` doit correspondre a l'URL dans le navigateur, sinon les cookies de session ne fonctionneront pas.
 
 ### Sans Docker
 
