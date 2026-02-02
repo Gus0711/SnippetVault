@@ -7,10 +7,11 @@ const config = {
 		alias: {
 			$components: 'src/lib/components'
 		},
-		// CSRF origin check is enabled by default (secure)
-		// Set DISABLE_CSRF=true to disable (auto-set when ORIGIN is not configured)
+		// CSRF origin check disabled for self-hosted flexibility
+		// Security relies on: HttpOnly cookies, SameSite=Lax, API tokens
+		// See README.md for security documentation
 		csrf: {
-			checkOrigin: process.env.DISABLE_CSRF !== 'true'
+			checkOrigin: false
 		}
 	}
 };

@@ -21,16 +21,13 @@ if [ -z "$SECRET_KEY" ]; then
 fi
 
 # ============================================
-# ORIGIN and CSRF configuration
+# ORIGIN configuration
 # ============================================
 if [ -z "$ORIGIN" ]; then
-    # No ORIGIN configured: use permissive defaults for easy setup
     export ORIGIN="http://0.0.0.0:3000"
-    export DISABLE_CSRF="true"
-    echo "[APP] ORIGIN not set, using default: $ORIGIN (CSRF check disabled)"
+    echo "[APP] ORIGIN not set, using default: $ORIGIN"
 else
-    # ORIGIN configured: keep CSRF enabled for security
-    echo "[APP] ORIGIN set to: $ORIGIN (CSRF check enabled)"
+    echo "[APP] ORIGIN set to: $ORIGIN"
 fi
 
 # ============================================

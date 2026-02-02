@@ -84,14 +84,8 @@ L'application est accessible sur `http://localhost:3000`.
 
 L'application fonctionne **sans aucune configuration** :
 
-| Mode | Configuration | Securite CSRF |
-|------|---------------|---------------|
-| **Zero-config** | Aucun `.env` | Desactivee (pour faciliter l'acces reseau) |
-| **Production** | `ORIGIN` defini dans `.env` | **Activee** |
-
-**Valeurs auto-generees :**
-- `SECRET_KEY` : generee au premier lancement, persistee dans `data/.secret_key`
-- `ORIGIN` : `http://0.0.0.0:3000` par defaut si non defini
+- `SECRET_KEY` : auto-generee au premier lancement, persistee dans `data/.secret_key`
+- `ORIGIN` : `http://0.0.0.0:3000` par defaut
 
 Pour personnaliser, creez un fichier `.env` :
 
@@ -102,18 +96,27 @@ cp .env.example .env
 | Variable | Defaut | Description |
 |----------|--------|-------------|
 | `SECRET_KEY` | Auto-generee | Cle de chiffrement des sessions |
-| `ORIGIN` | Auto (CSRF off) | URL de production → active la protection CSRF |
+| `ORIGIN` | `http://0.0.0.0:3000` | URL de l'application |
 | `UPLOAD_MAX_SIZE` | `52428800` (50 Mo) | Taille max des uploads |
 
 ### Production (recommande)
 
-Pour un deploiement securise avec HTTPS, definissez `ORIGIN` dans `.env` :
+Pour un deploiement avec HTTPS et domaine personnalise :
 
 ```env
 ORIGIN=https://snippets.example.com
 ```
 
-Cela active la **protection CSRF** et securise les cookies de session.
+### Securite
+
+SnippetVault est concu pour le **self-hosting** sur un reseau prive ou derriere un reverse proxy.
+
+La protection repose sur :
+- **Cookies HttpOnly + SameSite=Lax** : Protection contre le vol de session
+- **Tokens API** : Authentification des requetes programmatiques
+- **Chiffrement des sessions** : Via SECRET_KEY unique par instance
+
+> **Note :** La verification CSRF origin est desactivee pour permettre l'acces depuis n'importe quelle IP/domaine sans configuration. C'est un compromis acceptable en self-hosted.
 
 ### Sans Docker
 
