@@ -21,6 +21,9 @@ SnippetVault is an open-source, self-hosted code snippet manager. It combines a 
 - **Powerful**: Block editor, FTS5 search, full REST API
 - **Private**: No telemetry, no tracking
 
+<img width="1820" height="537" alt="image" src="https://github.com/user-attachments/assets/5e7e0dcf-d5d0-4a17-b15e-d006f07c184a" />
+
+
 ## Features
 
 ### Block Editor
