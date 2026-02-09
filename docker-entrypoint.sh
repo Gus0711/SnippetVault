@@ -77,16 +77,17 @@ if [ -d "$MIGRATIONS_DIR" ]; then
     );"
 
     # Bootstrap: if DB already has tables but no migration tracking,
-    # mark the initial schema migration (0000) as applied since schema.sql already covers it
+    # mark ALL existing migrations as applied — the DB was working before
+    # the migration system was added, so all migrations are already reflected
     if [ "$HAS_TRACKING" -eq 0 ]; then
-        INITIAL_MIGRATION=$(ls "$MIGRATIONS_DIR"/0000_*.sql 2>/dev/null | head -1)
-        if [ -n "$INITIAL_MIGRATION" ]; then
-            INIT_NAME=$(basename "$INITIAL_MIGRATION")
-            HAS_TABLES=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users';")
-            if [ "$HAS_TABLES" -gt 0 ]; then
+        HAS_TABLES=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users';")
+        if [ "$HAS_TABLES" -gt 0 ]; then
+            for f in "$MIGRATIONS_DIR"/*.sql; do
+                [ -f "$f" ] || continue
+                INIT_NAME=$(basename "$f")
                 sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO _drizzle_migrations (migration_name) VALUES ('$INIT_NAME');"
-                echo "[MIGRATE] Bootstrap: marked $INIT_NAME as applied (schema.sql)"
-            fi
+                echo "[MIGRATE] Bootstrap: marked $INIT_NAME as applied"
+            done
         fi
     fi
 
