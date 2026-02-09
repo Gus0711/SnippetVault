@@ -60,6 +60,74 @@ else
     fi
 fi
 
+# ============================================
+# Auto-apply Drizzle migrations
+# ============================================
+MIGRATIONS_DIR="/app/drizzle"
+
+if [ -d "$MIGRATIONS_DIR" ]; then
+    # Check if this is a first-time setup of migration tracking
+    HAS_TRACKING=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='_drizzle_migrations';")
+
+    # Create tracking table if it doesn't exist
+    sqlite3 "$DB_PATH" "CREATE TABLE IF NOT EXISTS _drizzle_migrations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        migration_name TEXT NOT NULL UNIQUE,
+        applied_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );"
+
+    # Bootstrap: if DB already has tables but no migration tracking,
+    # mark the initial schema migration (0000) as applied since schema.sql already covers it
+    if [ "$HAS_TRACKING" -eq 0 ]; then
+        INITIAL_MIGRATION=$(ls "$MIGRATIONS_DIR"/0000_*.sql 2>/dev/null | head -1)
+        if [ -n "$INITIAL_MIGRATION" ]; then
+            INIT_NAME=$(basename "$INITIAL_MIGRATION")
+            HAS_TABLES=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users';")
+            if [ "$HAS_TABLES" -gt 0 ]; then
+                sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO _drizzle_migrations (migration_name) VALUES ('$INIT_NAME');"
+                echo "[MIGRATE] Bootstrap: marked $INIT_NAME as applied (schema.sql)"
+            fi
+        fi
+    fi
+
+    # Collect pending migrations
+    PENDING=""
+    for f in "$MIGRATIONS_DIR"/*.sql; do
+        [ -f "$f" ] || continue
+        MIGRATION_NAME=$(basename "$f")
+        ALREADY=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM _drizzle_migrations WHERE migration_name='$MIGRATION_NAME';")
+        if [ "$ALREADY" -eq 0 ]; then
+            PENDING="$PENDING $f"
+        fi
+    done
+
+    if [ -z "$PENDING" ]; then
+        echo "[MIGRATE] Database is up to date"
+    else
+        # Backup before applying migrations
+        BACKUP_PATH="${DB_PATH}.bak-$(date +%Y%m%d-%H%M%S)"
+        cp "$DB_PATH" "$BACKUP_PATH"
+        echo "[MIGRATE] Backup created: $BACKUP_PATH"
+
+        for f in $PENDING; do
+            MIGRATION_NAME=$(basename "$f")
+            echo "[MIGRATE] Applying: $MIGRATION_NAME"
+
+            # Replace Drizzle statement breakpoints with newlines, then execute
+            sed 's/--> statement-breakpoint//' "$f" | sqlite3 "$DB_PATH"
+
+            if [ $? -eq 0 ]; then
+                sqlite3 "$DB_PATH" "INSERT INTO _drizzle_migrations (migration_name) VALUES ('$MIGRATION_NAME');"
+                echo "[MIGRATE] Applied: $MIGRATION_NAME"
+            else
+                echo "[MIGRATE] ERROR applying $MIGRATION_NAME — restoring backup"
+                cp "$BACKUP_PATH" "$DB_PATH"
+                exit 1
+            fi
+        done
+    fi
+fi
+
 # Start the application
 echo "[APP] Starting SnippetVault..."
 exec node build

@@ -24,8 +24,9 @@ COPY --from=builder /app/package.json ./
 # Copy scripts for admin tasks
 COPY --from=builder /app/scripts ./scripts
 
-# Copy schema and entrypoint
+# Copy schema, migrations, and entrypoint
 COPY src/lib/server/db/schema.sql ./schema.sql
+COPY drizzle/ ./drizzle/
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
