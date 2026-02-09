@@ -28,25 +28,25 @@ export const actions: Actions = {
 		const confirmPassword = formData.get('confirmPassword')?.toString();
 
 		if (!email || !name || !password || !confirmPassword) {
-			return fail(400, { error: 'Tous les champs sont requis' });
+			return fail(400, { error: 'auth.setup.allFieldsRequired' as const });
 		}
 
 		if (!email.includes('@')) {
-			return fail(400, { error: 'Email invalide' });
+			return fail(400, { error: 'auth.setup.invalidEmail' as const });
 		}
 
 		if (password.length < 8) {
-			return fail(400, { error: 'Le mot de passe doit contenir au moins 8 caractères' });
+			return fail(400, { error: 'auth.setup.passwordTooShort' as const });
 		}
 
 		if (password !== confirmPassword) {
-			return fail(400, { error: 'Les mots de passe ne correspondent pas' });
+			return fail(400, { error: 'auth.setup.passwordMismatch' as const });
 		}
 
 		// Double-check no users exist (prevent race condition)
 		const userCount = await db.select().from(users).all();
 		if (userCount.length > 0) {
-			return fail(400, { error: 'Un administrateur existe déjà' });
+			return fail(400, { error: 'auth.setup.adminExists' as const });
 		}
 
 		// Create admin user

@@ -5,6 +5,7 @@
 	import CreateCollectionModal from '$lib/components/CreateCollectionModal.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { themeStore } from '$lib/stores/theme.svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 	import { Settings, LogOut, ChevronDown } from 'lucide-svelte';
 
 	let { data, children } = $props();
@@ -13,9 +14,10 @@
 	let createModalOpen = $state(false);
 	let userMenuOpen = $state(false);
 
-	// Initialize theme from server preference
+	// Initialize theme and locale from server preferences
 	onMount(() => {
 		themeStore.init(data.user.themePreference);
+		localeStore.init(data.user.languagePreference);
 	});
 
 	const handleCreateCollection = async (collectionData: {
@@ -103,14 +105,14 @@
 							class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors"
 						>
 							<Settings size={11} strokeWidth={1.5} />
-							Parametres
+							{localeStore.t('layout.settings')}
 						</a>
 						<button
 							onclick={handleLogout}
 							class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors w-full text-left"
 						>
 							<LogOut size={11} strokeWidth={1.5} />
-							Deconnexion
+							{localeStore.t('layout.logout')}
 						</button>
 					</div>
 				{/if}

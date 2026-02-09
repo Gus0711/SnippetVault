@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { Sun, Moon, Monitor } from 'lucide-svelte';
 	import { themeStore, type Theme } from '$lib/stores/theme.svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
+	import type { TranslationKey } from '$lib/i18n';
 
 	let open = $state(false);
 
-	const themes: { value: Theme; label: string; icon: typeof Sun }[] = [
-		{ value: 'light', label: 'Clair', icon: Sun },
-		{ value: 'dark', label: 'Sombre', icon: Moon },
-		{ value: 'system', label: 'Systeme', icon: Monitor }
+	const themes: { value: Theme; labelKey: TranslationKey; icon: typeof Sun }[] = [
+		{ value: 'light', labelKey: 'theme.light', icon: Sun },
+		{ value: 'dark', labelKey: 'theme.dark', icon: Moon },
+		{ value: 'system', labelKey: 'theme.system', icon: Monitor }
 	];
 
 	const currentTheme = $derived(themes.find((t) => t.value === themeStore.theme) || themes[2]);
@@ -32,7 +34,7 @@
 			open = !open;
 		}}
 		class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
-		title="Theme: {currentTheme.label}"
+		title="Theme: {localeStore.t(currentTheme.labelKey)}"
 	>
 		<svelte:component this={currentTheme.icon} size={14} strokeWidth={1.5} />
 	</button>
@@ -52,7 +54,7 @@
 					role="menuitem"
 				>
 					<svelte:component this={theme.icon} size={12} strokeWidth={1.5} />
-					{theme.label}
+					{localeStore.t(theme.labelKey)}
 				</button>
 			{/each}
 		</div>

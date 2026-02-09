@@ -15,6 +15,13 @@
       "when": 1769523670331,
       "tag": "0001_dusty_shen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770627670678,
+      "tag": "0002_charming_klaw",
+      "breakpoints": true
     }
   ]
 }

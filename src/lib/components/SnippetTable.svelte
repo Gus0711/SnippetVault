@@ -3,6 +3,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { Search, Globe, FileText, ArrowUp, ArrowDown, Filter, X, Pin, Trash2, FolderInput, Tags, Check, Square, CheckSquare, Minus, Download } from 'lucide-svelte';
 	import { getLanguageColor, formatLang } from '$lib/utils/colors';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	interface SnippetWithRelations extends Snippet {
 		collection?: Collection | null;
@@ -60,7 +61,7 @@
 	// Bulk delete
 	const bulkDelete = async () => {
 		if (selectedCount === 0) return;
-		const confirmed = confirm(`Supprimer ${selectedCount} snippet${selectedCount > 1 ? 's' : ''} ?`);
+		const confirmed = confirm(localeStore.t(selectedCount > 1 ? 'table.confirmDelete' : 'table.confirmDelete', { count: selectedCount, plural: selectedCount > 1 ? 's' : '' }));
 		if (!confirmed) return;
 
 		actionInProgress = true;
@@ -350,13 +351,13 @@
 		const hours = Math.floor(diff / (1000 * 60 * 60));
 		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-		if (minutes < 1) return "a l'instant";
-		if (minutes < 60) return `${minutes}min`;
-		if (hours < 24) return `${hours}h`;
-		if (days === 1) return 'hier';
-		if (days < 7) return `${days}j`;
+		if (minutes < 1) return localeStore.t('time.justNow');
+		if (minutes < 60) return localeStore.t('time.minutesAgo', { count: minutes });
+		if (hours < 24) return localeStore.t('time.hoursAgo', { count: hours });
+		if (days === 1) return localeStore.t('time.yesterday');
+		if (days < 7) return localeStore.t('time.daysAgo', { count: days });
 
-		return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+		return d.toLocaleDateString(localeStore.locale === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short' });
 	};
 </script>
 
@@ -369,12 +370,12 @@
 			<button
 				onclick={clearSelection}
 				class="p-1 text-muted hover:text-foreground transition-colors"
-				title="Deselectionner"
+				title={localeStore.t('table.deselect')}
 			>
 				<X size={14} />
 			</button>
 			<span class="text-sm font-medium text-accent">
-				{selectedCount} selectionne{selectedCount > 1 ? 's' : ''}
+				{localeStore.t(selectedCount > 1 ? 'table.selectedPlural' : 'table.selected', { count: selectedCount })}
 			</span>
 
 			<div class="flex-1"></div>
@@ -387,7 +388,7 @@
 					class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
 				>
 					<FolderInput size={14} />
-					Deplacer
+					{localeStore.t('table.move')}
 				</button>
 				{#if showMoveMenu}
 					<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -399,7 +400,7 @@
 							onclick={() => bulkMove(null)}
 							class="w-full px-3 py-2 text-left text-sm hover:bg-surface transition-colors text-muted"
 						>
-							Aucune collection
+							{localeStore.t('table.noCollection')}
 						</button>
 						{#each allCollections as collection (collection.id)}
 							<button
@@ -421,7 +422,7 @@
 					class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
 				>
 					<Tags size={14} />
-					Tagger
+					{localeStore.t('table.addTag')}
 				</button>
 				{#if showTagMenu}
 					<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -438,7 +439,7 @@
 								<input
 									type="text"
 									bind:value={newTagName}
-									placeholder="Nouveau tag..."
+									placeholder={localeStore.t('table.newTagPlaceholder')}
 									class="flex-1 px-2 py-1.5 bg-surface border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent min-w-0"
 								/>
 								<button
@@ -453,7 +454,7 @@
 						<!-- Existing tags -->
 						<div class="max-h-44 overflow-y-auto">
 							{#if allTags.length === 0}
-								<div class="px-3 py-2 text-sm text-muted">Aucun tag existant</div>
+								<div class="px-3 py-2 text-sm text-muted">{localeStore.t('table.noExistingTags')}</div>
 							{:else}
 								{#each allTags as tag (tag.id)}
 									<button
@@ -480,7 +481,7 @@
 				class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-surface border border-border rounded hover:border-accent/50 transition-colors disabled:opacity-50"
 			>
 				<Download size={14} />
-				Exporter
+				{localeStore.t('table.export')}
 			</button>
 
 			<!-- Delete -->
@@ -490,7 +491,7 @@
 				class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-500/10 border border-red-500/30 text-red-500 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50"
 			>
 				<Trash2 size={14} />
-				Supprimer
+				{localeStore.t('table.delete')}
 			</button>
 		</div>
 	{/if}
@@ -504,7 +505,7 @@
 				bind:this={searchInputRef}
 				bind:value={searchQuery}
 				type="text"
-				placeholder="Rechercher..."
+				placeholder={localeStore.t('table.search')}
 				class="w-full pl-8 pr-8 py-1.5 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
 			/>
 			{#if searchQuery}
@@ -523,7 +524,7 @@
 
 		<!-- Count -->
 		<span class="text-xs text-muted tabular-nums">
-			{filteredSnippets().length} snippet{filteredSnippets().length !== 1 ? 's' : ''}
+			{localeStore.t(filteredSnippets().length !== 1 ? 'table.snippetsCount' : 'table.snippetCount', { count: filteredSnippets().length })}
 		</span>
 
 		<div class="flex-1"></div>
@@ -535,7 +536,7 @@
 					onclick={clearFilters}
 					class="px-2 py-1 text-xs text-muted hover:text-foreground transition-colors"
 				>
-					Effacer
+					{localeStore.t('table.clear')}
 				</button>
 			{/if}
 			<button
@@ -559,14 +560,14 @@
 		<div class="px-3 py-2 border-b border-border bg-background/50 flex items-center gap-4 text-xs">
 			<!-- Status -->
 			<label class="flex items-center gap-2">
-				<span class="text-muted uppercase tracking-wide text-[10px]">Statut</span>
+				<span class="text-muted uppercase tracking-wide text-[10px]">{localeStore.t('table.status')}</span>
 				<select
 					bind:value={statusFilter}
 					class="bg-surface border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-accent"
 				>
-					<option value="all">Tous</option>
-					<option value="draft">Brouillons</option>
-					<option value="published">Publies</option>
+					<option value="all">{localeStore.t('table.all')}</option>
+					<option value="draft">{localeStore.t('table.drafts')}</option>
+					<option value="published">{localeStore.t('table.publishedFilter')}</option>
 				</select>
 			</label>
 
@@ -578,7 +579,7 @@
 						bind:value={tagFilter}
 						class="bg-surface border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-accent"
 					>
-						<option value={null}>Tous</option>
+						<option value={null}>{localeStore.t('table.all')}</option>
 						{#each usedTags() as tag (tag.id)}
 							<option value={tag.id}>{tag.name}</option>
 						{/each}
@@ -594,7 +595,7 @@
 						bind:value={languageFilter}
 						class="bg-surface border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-accent font-mono"
 					>
-						<option value={null}>Tous</option>
+						<option value={null}>{localeStore.t('table.all')}</option>
 						{#each languages as lang}
 							<option value={lang}>{lang}</option>
 						{/each}
@@ -609,7 +610,7 @@
 		<div class="text-center py-8">
 			<FileText size={32} class="mx-auto text-muted mb-2 opacity-40" />
 			<p class="text-sm text-muted">
-				{searchQuery.trim() || activeFiltersCount > 0 ? 'Aucun resultat' : 'Aucun snippet'}
+				{searchQuery.trim() || activeFiltersCount > 0 ? localeStore.t('table.noResults') : localeStore.t('table.noSnippets')}
 			</p>
 		</div>
 	{:else}
@@ -621,7 +622,7 @@
 						<button
 							onclick={toggleSelectAll}
 							class="p-0.5 text-muted hover:text-foreground transition-colors"
-							title={allSelected ? 'Tout deselectionner' : 'Tout selectionner'}
+							title={allSelected ? localeStore.t('table.deselectAll') : localeStore.t('table.selectAll')}
 						>
 							{#if allSelected}
 								<CheckSquare size={16} class="text-accent" />
@@ -637,7 +638,7 @@
 							onclick={() => toggleSort('title')}
 							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors w-full"
 						>
-							Titre
+							{localeStore.t('table.title')}
 							{#if sortKey === 'title'}
 								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
 							{/if}
@@ -654,13 +655,13 @@
 							{/if}
 						</button>
 					</th>
-					<th class="font-normal text-muted/70 text-left px-3 py-2 w-36">Tags</th>
+					<th class="font-normal text-muted/70 text-left px-3 py-2 w-36">{localeStore.t('table.tags')}</th>
 					<th class="font-medium text-muted text-left w-20">
 						<button
 							onclick={() => toggleSort('updatedAt')}
 							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors"
 						>
-							Modif.
+							{localeStore.t('table.modified')}
 							{#if sortKey === 'updatedAt'}
 								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
 							{/if}
@@ -671,7 +672,7 @@
 							onclick={() => toggleSort('status')}
 							class="flex items-center gap-1 px-3 py-2 hover:text-foreground transition-colors"
 						>
-							Statut
+							{localeStore.t('table.statusCol')}
 							{#if sortKey === 'status'}
 								{#if sortDir === 'asc'}<ArrowUp size={12} />{:else}<ArrowDown size={12} />{/if}
 							{/if}
@@ -707,7 +708,7 @@
 									class="p-0.5 rounded transition-colors shrink-0 {snippet.isPinned
 										? 'text-accent'
 										: 'text-transparent group-hover:text-muted/40 hover:!text-accent'}"
-									title={snippet.isPinned ? 'Desepingler' : 'Epingler'}
+									title={snippet.isPinned ? localeStore.t('table.unpin') : localeStore.t('table.pin')}
 								>
 									<Pin size={14} class={snippet.isPinned ? 'fill-current' : ''} />
 								</button>
@@ -770,10 +771,10 @@
 							{#if snippet.status === 'published'}
 								<span class="flex items-center gap-1 text-xs text-accent">
 									<Globe size={12} />
-									Publie
+									{localeStore.t('table.published')}
 								</span>
 							{:else}
-								<span class="text-xs text-muted/50">Brouillon</span>
+								<span class="text-xs text-muted/50">{localeStore.t('table.draft')}</span>
 							{/if}
 						</td>
 					</tr>

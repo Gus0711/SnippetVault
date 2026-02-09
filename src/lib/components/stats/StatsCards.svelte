@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { FileCode, Globe, Star, FolderOpen } from 'lucide-svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	interface Props {
 		stats: {
@@ -21,7 +22,7 @@
 			</div>
 			<div>
 				<div class="text-lg font-semibold text-foreground leading-none">{stats.total}</div>
-				<div class="text-[10px] text-muted mt-0.5">Snippets</div>
+				<div class="text-[10px] text-muted mt-0.5">{localeStore.t('stats.snippets')}</div>
 			</div>
 		</div>
 	</div>
@@ -33,7 +34,7 @@
 			</div>
 			<div>
 				<div class="text-lg font-semibold text-foreground leading-none">{stats.published}</div>
-				<div class="text-[10px] text-muted mt-0.5">Publies</div>
+				<div class="text-[10px] text-muted mt-0.5">{localeStore.t('stats.published')}</div>
 			</div>
 		</div>
 	</div>
@@ -45,7 +46,7 @@
 			</div>
 			<div>
 				<div class="text-lg font-semibold text-foreground leading-none">{stats.favorites}</div>
-				<div class="text-[10px] text-muted mt-0.5">Favoris</div>
+				<div class="text-[10px] text-muted mt-0.5">{localeStore.t('stats.favorites')}</div>
 			</div>
 		</div>
 	</div>
@@ -57,7 +58,7 @@
 			</div>
 			<div>
 				<div class="text-lg font-semibold text-foreground leading-none">{stats.collections}</div>
-				<div class="text-[10px] text-muted mt-0.5">Collections</div>
+				<div class="text-[10px] text-muted mt-0.5">{localeStore.t('stats.collections')}</div>
 			</div>
 		</div>
 	</div>

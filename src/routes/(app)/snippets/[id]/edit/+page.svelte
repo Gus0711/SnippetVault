@@ -4,6 +4,7 @@
 	import type { Collection } from '$lib/server/db/schema';
 	import { BlockEditor, type Block } from '$lib/components/editor';
 	import { detectLanguage } from '$lib/utils/colors';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	let { data } = $props();
 
@@ -106,7 +107,7 @@
 
 	const handleSubmit = async () => {
 		if (!title.trim()) {
-			error = 'Le titre est requis';
+			error = localeStore.t('snippetForm.titleRequired');
 			return;
 		}
 
@@ -140,10 +141,10 @@
 				goto(`/snippets/${data.snippet.id}`);
 			} else {
 				const result = await response.json();
-				error = result.error || 'Erreur lors de la sauvegarde';
+				error = result.error || localeStore.t('snippetForm.saveError');
 			}
 		} catch (e) {
-			error = 'Erreur de connexion';
+			error = localeStore.t('snippetForm.connectionError');
 		} finally {
 			saving = false;
 		}
@@ -160,14 +161,14 @@
 			>
 				<ArrowLeft size={20} />
 			</a>
-			<h1 class="text-xl font-semibold text-foreground">Modifier le snippet</h1>
+			<h1 class="text-xl font-semibold text-foreground">{localeStore.t('snippetForm.editTitle')}</h1>
 		</div>
 		<div class="flex items-center gap-2">
 			<a
 				href="/snippets/{data.snippet.id}"
 				class="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
 			>
-				Annuler
+				{localeStore.t('snippetForm.cancel')}
 			</a>
 			<button
 				onclick={handleSubmit}
@@ -175,7 +176,7 @@
 				class="flex items-center gap-2 px-3 py-1.5 bg-accent text-white rounded text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				<Save size={14} />
-				{saving ? 'Enregistrement...' : 'Sauvegarder'}
+				{saving ? localeStore.t('snippetForm.saving') : localeStore.t('snippetForm.save')}
 			</button>
 		</div>
 	</div>
@@ -189,12 +190,12 @@
 	<div class="space-y-4">
 		<!-- Title -->
 		<div>
-			<label for="title" class="block text-sm font-medium text-foreground mb-1.5">Titre</label>
+			<label for="title" class="block text-sm font-medium text-foreground mb-1.5">{localeStore.t('snippetForm.title')}</label>
 			<input
 				id="title"
 				type="text"
 				bind:value={title}
-				placeholder="Ex: Template alarme Niagara"
+				placeholder={localeStore.t('snippetForm.titlePlaceholder')}
 				class="w-full px-3 py-2 bg-surface border border-border rounded text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 			/>
 		</div>
@@ -202,14 +203,14 @@
 		<!-- Collection -->
 		<div>
 			<label for="collection" class="block text-sm font-medium text-foreground mb-1.5"
-				>Collection</label
+				>{localeStore.t('snippetForm.collection')}</label
 			>
 			<select
 				id="collection"
 				bind:value={selectedCollectionId}
 				class="w-full px-3 py-2 bg-surface border border-border rounded text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 			>
-				<option value={null}>Aucune collection</option>
+				<option value={null}>{localeStore.t('snippetForm.noCollection')}</option>
 				{#each collectionTree as collection (collection.id)}
 					<option value={collection.id}>
 						{'  '.repeat(collection.depth)}{collection.icon || ''} {collection.name}
@@ -220,7 +221,7 @@
 
 		<!-- Tags -->
 		<div>
-			<label class="block text-sm font-medium text-foreground mb-1.5">Tags</label>
+			<label class="block text-sm font-medium text-foreground mb-1.5">{localeStore.t('snippetForm.tags')}</label>
 			<div class="flex flex-wrap gap-2 mb-2">
 				{#each selectedTags as tag (tag.id)}
 					<button
@@ -238,7 +239,7 @@
 						<input
 							type="text"
 							bind:value={newTagName}
-							placeholder="Nouveau tag"
+							placeholder={localeStore.t('snippetForm.newTagPlaceholder')}
 							onkeydown={(e) => e.key === 'Enter' && createTag()}
 							class="px-2 py-1 text-xs bg-surface border border-border rounded text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent w-24"
 						/>
@@ -264,7 +265,7 @@
 						class="flex items-center gap-1 px-2 py-1 rounded text-xs border border-dashed border-border text-muted hover:text-foreground hover:border-foreground/30 transition-colors"
 					>
 						<Plus size={12} />
-						Créer un tag
+						{localeStore.t('snippetForm.createTag')}
 					</button>
 				{/if}
 			</div>
@@ -287,14 +288,14 @@
 
 		<!-- Content (Block Editor) -->
 		<div>
-			<label class="block text-sm font-medium text-foreground mb-1.5">Contenu</label>
+			<label class="block text-sm font-medium text-foreground mb-1.5">{localeStore.t('snippetForm.content')}</label>
 			<BlockEditor
 				initialBlocks={initialBlocks}
 				snippetId={data.snippet.id}
 				onUpdate={handleEditorUpdate}
 			/>
 			<p class="mt-2 text-xs text-muted">
-				Tapez <kbd class="px-1 py-0.5 bg-surface border border-border rounded text-[10px]">/</kbd> pour inserer un bloc (code, image, titre...)
+				{localeStore.t('snippetForm.contentHint')}
 			</p>
 		</div>
 	</div>

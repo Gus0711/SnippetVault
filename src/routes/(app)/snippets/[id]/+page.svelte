@@ -25,6 +25,7 @@
 	import { JsonViewer } from '$lib/components/json-viewer';
 	import { HtmlPreview } from '$lib/components/html-preview';
 	import { getLanguageColor } from '$lib/utils/colors';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	// Collect all CSS content from blocks for HTML preview
 	const cssContent = $derived(
@@ -263,7 +264,7 @@
 			const result = await response.json();
 
 			if (!response.ok) {
-				gistError = result.error || 'Erreur lors de l\'export';
+				gistError = result.error || localeStore.t('snippet.exportGist');
 				return;
 			}
 
@@ -272,7 +273,7 @@
 			invalidateAll();
 		} catch (e) {
 			console.error('Gist export failed:', e);
-			gistError = 'Erreur lors de l\'export vers Gist';
+			gistError = localeStore.t('snippet.exportGist');
 		} finally {
 			exportingToGist = false;
 		}
@@ -293,7 +294,7 @@
 				onclick={toggleFavorite}
 				disabled={togglingFavorite}
 				class="p-1 rounded transition-colors {isFavorite ? 'text-yellow-500' : 'text-muted hover:text-yellow-500'}"
-				title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+				title={isFavorite ? localeStore.t('snippet.removeFavorite') : localeStore.t('snippet.addFavorite')}
 			>
 				<Star size={16} strokeWidth={1.5} class={isFavorite ? 'fill-yellow-500' : ''} />
 			</button>
@@ -313,12 +314,12 @@
 					{#if data.snippet.status === 'published'}
 						<span class="flex items-center gap-0.5 text-accent">
 							<Globe size={10} strokeWidth={1.5} />
-							Publie
+							{localeStore.t('snippet.published')}
 						</span>
 					{:else}
 						<span class="flex items-center gap-0.5">
 							<GlobeLock size={10} strokeWidth={1.5} />
-							Brouillon
+							{localeStore.t('snippet.draft')}
 						</span>
 					{/if}
 				</div>
@@ -333,12 +334,12 @@
 						class="flex items-center gap-1 px-2 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors disabled:opacity-50"
 					>
 						<GlobeLock size={12} strokeWidth={1.5} />
-						Depublier
+						{localeStore.t('snippet.unpublish')}
 					</button>
 					<button
 						onclick={() => (showPublishModal = true)}
 						class="p-1 border border-border rounded hover:bg-surface transition-colors"
-						title="Options de publication"
+						title={localeStore.t('snippet.publishOptions')}
 					>
 						<Settings size={12} strokeWidth={1.5} />
 					</button>
@@ -349,7 +350,7 @@
 						class="flex items-center gap-1 px-2 py-1 text-[11px] bg-accent text-white rounded hover:opacity-90 transition-opacity disabled:opacity-50"
 					>
 						<Globe size={12} strokeWidth={1.5} />
-						Publier
+						{localeStore.t('snippet.publish')}
 					</button>
 				{/if}
 				<a
@@ -357,7 +358,7 @@
 					class="flex items-center gap-1 px-2 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors"
 				>
 					<Edit size={12} strokeWidth={1.5} />
-					Modifier
+					{localeStore.t('snippet.edit')}
 				</a>
 			{/if}
 			{#if canDelete}
@@ -370,20 +371,20 @@
 					</button>
 					{#if showDeleteConfirm}
 						<div class="absolute right-0 top-full mt-1 p-2.5 bg-background border border-border rounded shadow-lg z-10 w-48">
-							<p class="text-[11px] text-foreground mb-2">Supprimer ce snippet ?</p>
+							<p class="text-[11px] text-foreground mb-2">{localeStore.t('snippet.deleteConfirm')}</p>
 							<div class="flex gap-1.5">
 								<button
 									onclick={() => (showDeleteConfirm = false)}
 									class="flex-1 px-2 py-1 text-[10px] border border-border rounded hover:bg-surface transition-colors"
 								>
-									Annuler
+									{localeStore.t('snippet.cancelDelete')}
 								</button>
 								<button
 									onclick={handleDelete}
 									disabled={deleting}
 									class="flex-1 px-2 py-1 text-[10px] bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
 								>
-									{deleting ? '...' : 'Supprimer'}
+									{deleting ? '...' : localeStore.t('snippet.confirmDelete')}
 								</button>
 							</div>
 						</div>
@@ -398,7 +399,7 @@
 		<div class="mb-3 px-2.5 py-2 bg-accent/5 border border-accent/20 rounded flex items-center justify-between">
 			<div class="flex items-center gap-2">
 				<Globe size={14} strokeWidth={1.5} class="text-accent" />
-				<span class="text-[11px] text-foreground">Lien public disponible</span>
+				<span class="text-[11px] text-foreground">{localeStore.t('snippet.publicLink')}</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<button
@@ -407,10 +408,10 @@
 				>
 					{#if linkCopied}
 						<Check size={10} class="text-accent" />
-						Copie
+						{localeStore.t('snippet.copied')}
 					{:else}
 						<Copy size={10} />
-						Copier
+						{localeStore.t('snippet.copy')}
 					{/if}
 				</button>
 				<button
@@ -418,7 +419,7 @@
 					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors"
 				>
 					<Code size={10} />
-					Embed
+					{localeStore.t('snippet.embed')}
 				</button>
 				<a
 					href={publicUrl}
@@ -426,7 +427,7 @@
 					class="flex items-center gap-1 px-2 py-0.5 text-[10px] bg-accent text-white rounded hover:opacity-90 transition-opacity"
 				>
 					<ExternalLink size={10} />
-					Voir
+					{localeStore.t('snippet.view')}
 				</a>
 			</div>
 		</div>
@@ -434,7 +435,7 @@
 
 	<!-- Export buttons -->
 	<div class="mb-3 flex items-center gap-1.5 flex-wrap">
-		<span class="text-[10px] text-muted">Export:</span>
+		<span class="text-[10px] text-muted">{localeStore.t('snippet.export')}:</span>
 		<button
 			onclick={() => exportSnippet('md')}
 			disabled={exporting}
@@ -460,14 +461,14 @@
 					class="flex items-center gap-1 px-2 py-0.5 text-[10px] bg-[#238636] text-white rounded hover:bg-[#2ea043] transition-colors"
 				>
 					<Github size={10} />
-					Voir le Gist
+					{localeStore.t('snippet.viewGist')}
 					<ExternalLink size={8} />
 				</a>
 				<button
 					onclick={() => (showGistModal = true)}
 					disabled={exportingToGist}
 					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors disabled:opacity-50"
-					title="Mettre a jour le Gist"
+					title={localeStore.t('snippet.updateGist')}
 				>
 					<RefreshCw size={10} />
 				</button>
@@ -478,13 +479,13 @@
 					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors disabled:opacity-50"
 				>
 					<Github size={10} />
-					Gist
+					{localeStore.t('snippet.createGist')}
 				</button>
 			{:else}
 				<a
 					href="/settings"
 					class="flex items-center gap-1 px-2 py-0.5 text-[10px] border border-border rounded hover:bg-surface transition-colors text-muted"
-					title="Configurez votre token GitHub dans les parametres"
+					title={localeStore.t('snippet.githubTokenRequired')}
 				>
 					<Github size={10} />
 					Gist
@@ -512,17 +513,17 @@
 	<!-- Content -->
 	<div class="border border-border rounded overflow-hidden">
 		<div class="flex items-center justify-between px-2.5 py-1.5 border-b border-border bg-surface/50">
-			<span class="text-[10px] text-muted uppercase tracking-wide">Contenu</span>
+			<span class="text-[10px] text-muted uppercase tracking-wide">{localeStore.t('snippet.content')}</span>
 			<button
 				onclick={copyContent}
 				class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-muted hover:text-foreground transition-colors"
 			>
 				{#if copied}
 					<Check size={10} class="text-accent" />
-					Copie
+					{localeStore.t('snippet.copied')}
 				{:else}
 					<Copy size={10} />
-					Copier
+					{localeStore.t('snippet.copy')}
 				{/if}
 			</button>
 		</div>
@@ -544,7 +545,7 @@
 								<button
 									onclick={() => navigator.clipboard.writeText(block.content || '')}
 									class="p-1 bg-background/90 text-muted hover:text-foreground rounded opacity-0 group-hover:opacity-100 transition-opacity"
-									title="Copier"
+									title={localeStore.t('snippet.copy')}
 								>
 									<Copy size={11} />
 								</button>
@@ -601,7 +602,7 @@
 									class="max-w-full h-auto rounded border border-border"
 								/>
 							{:else}
-								<p class="text-[11px] text-muted">Image non disponible</p>
+								<p class="text-[11px] text-muted">{localeStore.t('snippet.imageUnavailable')}</p>
 							{/if}
 						</div>
 					{:else if block.type === 'file'}
@@ -626,11 +627,11 @@
 										<div class="text-[10px] text-muted">{sizeText}</div>
 									</div>
 									<span class="px-2 py-1 bg-accent text-white text-[10px] rounded">
-										Telecharger
+										{localeStore.t('snippet.download')}
 									</span>
 								</a>
 							{:else}
-								<p class="text-[11px] text-muted">Fichier non disponible</p>
+								<p class="text-[11px] text-muted">{localeStore.t('snippet.fileUnavailable')}</p>
 							{/if}
 						</div>
 					{:else}
@@ -641,7 +642,7 @@
 				</div>
 			{/each}
 		{:else}
-			<div class="p-6 text-center text-muted text-[11px]">Aucun contenu</div>
+			<div class="p-6 text-center text-muted text-[11px]">{localeStore.t('snippet.noContent')}</div>
 		{/if}
 	</div>
 </div>
@@ -652,7 +653,7 @@
 		<div class="bg-background border border-border rounded shadow-xl w-full max-w-sm">
 			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
 				<h2 class="text-sm font-semibold text-foreground">
-					{data.snippet.status === 'published' ? 'Options de publication' : 'Publier'}
+					{data.snippet.status === 'published' ? localeStore.t('publish.titleEdit') : localeStore.t('publish.titleNew')}
 				</h2>
 				<button
 					onclick={() => (showPublishModal = false)}
@@ -664,7 +665,7 @@
 			<div class="p-3 space-y-3">
 				<!-- Theme selector -->
 				<div>
-					<label class="block text-[11px] font-medium text-foreground mb-1">Theme</label>
+					<label class="block text-[11px] font-medium text-foreground mb-1">{localeStore.t('publish.theme')}</label>
 					<select
 						bind:value={selectedTheme}
 						class="w-full px-2 py-1.5 bg-surface border border-border rounded text-foreground text-[11px] focus:outline-none focus:border-accent"
@@ -683,7 +684,7 @@
 							bind:checked={showDescription}
 							class="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent"
 						/>
-						<span class="text-[11px] text-foreground">Afficher la description</span>
+						<span class="text-[11px] text-foreground">{localeStore.t('publish.showDescription')}</span>
 					</label>
 					<label class="flex items-center gap-2 cursor-pointer">
 						<input
@@ -691,13 +692,13 @@
 							bind:checked={showAttachments}
 							class="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent"
 						/>
-						<span class="text-[11px] text-foreground">Afficher les images/fichiers</span>
+						<span class="text-[11px] text-foreground">{localeStore.t('publish.showAttachments')}</span>
 					</label>
 				</div>
 
 				{#if data.snippet.status !== 'published'}
 					<p class="text-[10px] text-muted p-2 bg-surface rounded">
-						Un lien unique sera genere pour le partage public.
+						{localeStore.t('publish.hint')}
 					</p>
 				{/if}
 			</div>
@@ -706,7 +707,7 @@
 					onclick={() => (showPublishModal = false)}
 					class="px-2.5 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors"
 				>
-					Annuler
+					{localeStore.t('publish.cancel')}
 				</button>
 				{#if data.snippet.status === 'published'}
 					<button
@@ -716,7 +717,7 @@
 						}}
 						class="px-2.5 py-1 text-[11px] bg-accent text-white rounded hover:opacity-90 transition-opacity"
 					>
-						Enregistrer
+						{localeStore.t('publish.save')}
 					</button>
 				{:else}
 					<button
@@ -725,7 +726,7 @@
 						class="flex items-center gap-1 px-2.5 py-1 text-[11px] bg-accent text-white rounded hover:opacity-90 transition-opacity disabled:opacity-50"
 					>
 						<Globe size={11} />
-						{publishing ? '...' : 'Publier'}
+						{publishing ? '...' : localeStore.t('publish.submit')}
 					</button>
 				{/if}
 			</div>
@@ -738,7 +739,7 @@
 	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 		<div class="bg-background border border-border rounded shadow-xl w-full max-w-md">
 			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
-				<h2 class="text-sm font-semibold text-foreground">Code d'integration</h2>
+				<h2 class="text-sm font-semibold text-foreground">{localeStore.t('embed.title')}</h2>
 				<button
 					onclick={() => (showEmbedModal = false)}
 					class="p-0.5 text-muted hover:text-foreground rounded transition-colors"
@@ -750,7 +751,7 @@
 				<!-- Height slider -->
 				<div>
 					<label class="block text-[11px] font-medium text-foreground mb-1">
-						Hauteur: {embedHeight}px
+						{localeStore.t('embed.height', { height: embedHeight })}
 					</label>
 					<input
 						type="range"
@@ -764,7 +765,7 @@
 
 				<!-- Code preview -->
 				<div>
-					<label class="block text-[11px] font-medium text-foreground mb-1">Code iframe</label>
+					<label class="block text-[11px] font-medium text-foreground mb-1">{localeStore.t('embed.iframeCode')}</label>
 					<div class="relative">
 						<pre class="p-2 bg-surface border border-border rounded text-[10px] text-foreground overflow-x-auto whitespace-pre-wrap break-all font-mono">{embedCode}</pre>
 						<button
@@ -782,14 +783,14 @@
 
 				<!-- Preview link -->
 				<div class="flex items-center justify-between pt-2 border-t border-border">
-					<span class="text-[10px] text-muted">Apercu:</span>
+					<span class="text-[10px] text-muted">{localeStore.t('embed.preview')}:</span>
 					<a
 						href={embedUrl}
 						target="_blank"
 						class="flex items-center gap-1 text-[10px] text-accent hover:underline"
 					>
 						<ExternalLink size={10} />
-						Ouvrir dans un nouvel onglet
+						{localeStore.t('embed.openNewTab')}
 					</a>
 				</div>
 			</div>
@@ -798,7 +799,7 @@
 					onclick={() => (showEmbedModal = false)}
 					class="px-2.5 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors"
 				>
-					Fermer
+					{localeStore.t('embed.close')}
 				</button>
 			</div>
 		</div>
@@ -812,7 +813,7 @@
 			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
 				<h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
 					<Github size={16} />
-					{gistUrl ? 'Mettre a jour le Gist' : 'Exporter vers GitHub Gist'}
+					{gistUrl ? localeStore.t('gist.updateTitle') : localeStore.t('gist.createTitle')}
 				</h2>
 				<button
 					onclick={() => (showGistModal = false)}
@@ -830,19 +831,19 @@
 								bind:checked={gistIsPublic}
 								class="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent"
 							/>
-							<span class="text-[11px] text-foreground">Gist public</span>
+							<span class="text-[11px] text-foreground">{localeStore.t('gist.public')}</span>
 						</label>
 						<p class="text-[10px] text-muted mt-1 ml-5">
-							Les Gists secrets sont accessibles via URL mais ne sont pas indexés.
+							{localeStore.t('gist.secretHint')}
 						</p>
 					</div>
 				{/if}
 
 				<div class="p-2 bg-surface rounded text-[10px] text-muted">
-					<p class="font-medium text-foreground mb-1">Contenu du Gist:</p>
+					<p class="font-medium text-foreground mb-1">{localeStore.t('gist.contentTitle')}:</p>
 					<ul class="list-disc list-inside space-y-0.5">
-						<li>README.md - Description et code formaté</li>
-						<li>Fichiers de code séparés par langage</li>
+						<li>{localeStore.t('gist.contentReadme')}</li>
+						<li>{localeStore.t('gist.contentFiles')}</li>
 					</ul>
 				</div>
 
@@ -855,7 +856,7 @@
 					onclick={() => (showGistModal = false)}
 					class="px-2.5 py-1 text-[11px] border border-border rounded hover:bg-surface transition-colors"
 				>
-					Annuler
+					{localeStore.t('gist.cancel')}
 				</button>
 				<button
 					onclick={exportToGist}
@@ -867,7 +868,7 @@
 						Export...
 					{:else}
 						<Github size={11} />
-						{gistUrl ? 'Mettre a jour' : 'Creer le Gist'}
+						{gistUrl ? localeStore.t('gist.update') : localeStore.t('gist.create')}
 					{/if}
 				</button>
 			</div>

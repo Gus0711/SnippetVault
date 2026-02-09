@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Collection } from '$lib/server/db/schema';
 	import { X, Folder } from 'lucide-svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	interface Props {
 		open: boolean;
@@ -85,7 +86,7 @@
 		>
 			<!-- Header -->
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Nouvelle collection</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('createCollection.title')}</h2>
 				<button
 					onclick={onClose}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -98,7 +99,7 @@
 			<form onsubmit={handleSubmit} class="p-4 space-y-4">
 				<!-- Name -->
 				<div>
-					<label for="name" class="block text-sm font-medium text-foreground mb-1">Nom</label>
+					<label for="name" class="block text-sm font-medium text-foreground mb-1">{localeStore.t('createCollection.name')}</label>
 					<input
 						type="text"
 						id="name"
@@ -106,14 +107,14 @@
 						required
 						autofocus
 						class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-						placeholder="Ma collection"
+						placeholder={localeStore.t('createCollection.namePlaceholder')}
 					/>
 				</div>
 
 				<!-- Icon (optional) -->
 				<div>
 					<label for="icon" class="block text-sm font-medium text-foreground mb-1">
-						Icone <span class="text-muted font-normal">(optionnel)</span>
+						{localeStore.t('createCollection.icon')} <span class="text-muted font-normal">{localeStore.t('createCollection.optional')}</span>
 					</label>
 					<div class="flex items-center gap-2">
 						<input
@@ -124,21 +125,21 @@
 							class="w-16 px-3 py-2 bg-surface border border-border rounded-md text-foreground text-center focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 							placeholder="📁"
 						/>
-						<span class="text-xs text-muted">Un emoji ou caractère</span>
+						<span class="text-xs text-muted">{localeStore.t('createCollection.iconPlaceholder')}</span>
 					</div>
 				</div>
 
 				<!-- Parent collection -->
 				<div>
 					<label for="parent" class="block text-sm font-medium text-foreground mb-1">
-						Collection parente <span class="text-muted font-normal">(optionnel)</span>
+						{localeStore.t('createCollection.parent')} <span class="text-muted font-normal">{localeStore.t('createCollection.optional')}</span>
 					</label>
 					<select
 						id="parent"
 						bind:value={selectedParentId}
 						class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 					>
-						<option value={null}>Racine</option>
+						<option value={null}>{localeStore.t('createCollection.root')}</option>
 						{#each flatCollections as { collection, level } (collection.id)}
 							<option value={collection.id}>
 								{'─'.repeat(level)}{level > 0 ? ' ' : ''}{collection.icon || ''}{collection.icon
@@ -156,14 +157,14 @@
 						onclick={onClose}
 						class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 					>
-						Annuler
+						{localeStore.t('createCollection.cancel')}
 					</button>
 					<button
 						type="submit"
 						disabled={!name.trim() || loading}
 						class="px-4 py-2 text-sm bg-accent text-white rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
 					>
-						{loading ? 'Création...' : 'Créer'}
+						{loading ? localeStore.t('createCollection.loading') : localeStore.t('createCollection.submit')}
 					</button>
 				</div>
 			</form>

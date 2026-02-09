@@ -10,6 +10,14 @@
 				const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 				const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
 				if (isDark) document.documentElement.classList.add('dark');
+
+				var locale = localStorage.getItem('locale');
+				if (locale === 'en' || locale === 'fr') {
+					document.documentElement.lang = locale;
+				} else {
+					var bl = (navigator.language || '').slice(0, 2);
+					document.documentElement.lang = bl === 'en' ? 'en' : 'fr';
+				}
 			})();
 		</script>
 		%sveltekit.head%

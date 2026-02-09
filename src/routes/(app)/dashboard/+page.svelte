@@ -4,6 +4,7 @@
 	import LanguageDonut from '$lib/components/stats/LanguageDonut.svelte';
 	import TopTagsBar from '$lib/components/stats/TopTagsBar.svelte';
 	import { Plus, FileText } from 'lucide-svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	let { data } = $props();
 </script>
@@ -11,13 +12,13 @@
 <div class="p-3">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-3">
-		<h1 class="text-sm font-semibold text-foreground">Snippets</h1>
+		<h1 class="text-sm font-semibold text-foreground">{localeStore.t('dashboard.title')}</h1>
 		<a
 			href="/snippets/new"
 			class="flex items-center gap-1 px-2 py-1 bg-accent/90 text-white rounded text-[11px] font-medium hover:bg-accent transition-colors"
 		>
 			<Plus size={11} strokeWidth={2} />
-			Nouveau
+			{localeStore.t('dashboard.new')}
 		</a>
 	</div>
 
@@ -28,11 +29,11 @@
 	{#if data.stats.total > 0 && (data.languageStats.length > 0 || data.topTags.length > 0)}
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
 			<div class="border border-border rounded p-3 bg-surface/30">
-				<h3 class="text-[11px] font-medium text-muted mb-2">Langages</h3>
+				<h3 class="text-[11px] font-medium text-muted mb-2">{localeStore.t('dashboard.languages')}</h3>
 				<LanguageDonut data={data.languageStats} />
 			</div>
 			<div class="border border-border rounded p-3 bg-surface/30">
-				<h3 class="text-[11px] font-medium text-muted mb-2">Tags</h3>
+				<h3 class="text-[11px] font-medium text-muted mb-2">{localeStore.t('dashboard.tags')}</h3>
 				<TopTagsBar data={data.topTags} />
 			</div>
 		</div>
@@ -42,13 +43,13 @@
 	{#if data.snippets.length === 0}
 		<div class="border border-border rounded text-center py-8 px-4">
 			<FileText size={28} class="mx-auto text-muted mb-2 opacity-40" />
-			<p class="text-muted text-[11px] mb-3">Aucun snippet</p>
+			<p class="text-muted text-[11px] mb-3">{localeStore.t('dashboard.noSnippets')}</p>
 			<a
 				href="/snippets/new"
 				class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-accent/90 text-white rounded text-[11px] font-medium hover:bg-accent transition-colors"
 			>
 				<Plus size={11} />
-				Creer un snippet
+				{localeStore.t('dashboard.createSnippet')}
 			</a>
 		</div>
 	{:else}

@@ -3,6 +3,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import SnippetTable from '$lib/components/SnippetTable.svelte';
 	import ShareCollectionModal from '$lib/components/ShareCollectionModal.svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 	import {
 		Plus,
 		Folder,
@@ -48,7 +49,7 @@
 <div class="p-3">
 	<!-- Breadcrumb -->
 	<nav class="flex items-center gap-1 text-[10px] text-muted mb-3">
-		<a href="/dashboard" class="hover:text-foreground transition-colors">Dashboard</a>
+		<a href="/dashboard" class="hover:text-foreground transition-colors">{localeStore.t('collection.dashboard')}</a>
 		{#each data.breadcrumb as crumb, i (crumb.id)}
 			<ChevronRight size={10} strokeWidth={1.5} />
 			{#if i === data.breadcrumb.length - 1}
@@ -80,9 +81,9 @@
 					{#if !isOwner && data.ownerName}
 						<span class="text-[10px] text-muted flex items-center gap-1">
 							<Users size={10} strokeWidth={1.5} />
-							Partagee par {data.ownerName}
+							{localeStore.t('collection.sharedBy', { name: data.ownerName })}
 							{#if data.permission === 'read'}
-								<span class="text-muted/60">(lecture seule)</span>
+								<span class="text-muted/60">({localeStore.t('collection.readOnly')})</span>
 							{/if}
 						</span>
 					{/if}
@@ -97,7 +98,7 @@
 					class="flex items-center gap-1 px-2 py-1 bg-accent text-white rounded text-[11px] font-medium hover:opacity-90 transition-opacity"
 				>
 					<Plus size={12} strokeWidth={2} />
-					Nouveau
+					{localeStore.t('collection.new')}
 				</a>
 			{/if}
 
@@ -107,7 +108,7 @@
 					class="flex items-center gap-1 px-2 py-1 border border-border rounded text-[11px] hover:bg-surface transition-colors"
 				>
 					<Share2 size={12} strokeWidth={1.5} />
-					Partager
+					{localeStore.t('collection.share')}
 				</button>
 
 				<div class="relative">
@@ -128,14 +129,14 @@
 								class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-foreground hover:bg-surface transition-colors w-full text-left"
 							>
 								<Pencil size={11} strokeWidth={1.5} />
-								Renommer
+								{localeStore.t('collection.rename')}
 							</button>
 							<button
 								onclick={openDelete}
 								class="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-red-500 hover:bg-surface transition-colors w-full text-left"
 							>
 								<Trash2 size={11} strokeWidth={1.5} />
-								Supprimer
+								{localeStore.t('collection.delete')}
 							</button>
 						</div>
 					{/if}
@@ -147,7 +148,7 @@
 	<!-- Child collections -->
 	{#if data.childCollections.length > 0}
 		<div class="mb-3">
-			<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide mb-2">Sous-collections</h2>
+			<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide mb-2">{localeStore.t('collection.subCollections')}</h2>
 			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
 				{#each data.childCollections as child (child.id)}
 					<a
@@ -181,7 +182,7 @@
 			role="presentation"
 		>
 			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
-				<h2 class="text-sm font-medium text-foreground">Renommer</h2>
+				<h2 class="text-sm font-medium text-foreground">{localeStore.t('collection.renameTitle')}</h2>
 				<button
 					onclick={() => (renameModalOpen = false)}
 					class="p-0.5 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -216,13 +217,13 @@
 						onclick={() => (renameModalOpen = false)}
 						class="px-2 py-1 text-[11px] text-muted hover:text-foreground transition-colors"
 					>
-						Annuler
+						{localeStore.t('collection.renameCancel')}
 					</button>
 					<button
 						type="submit"
 						class="px-2.5 py-1 text-[11px] bg-accent text-white rounded hover:opacity-90 transition-opacity"
 					>
-						Renommer
+						{localeStore.t('collection.renameSubmit')}
 					</button>
 				</div>
 			</form>
@@ -241,7 +242,7 @@
 			role="presentation"
 		>
 			<div class="flex items-center justify-between px-3 py-2 border-b border-border">
-				<h2 class="text-sm font-medium text-foreground">Supprimer</h2>
+				<h2 class="text-sm font-medium text-foreground">{localeStore.t('collection.deleteTitle')}</h2>
 				<button
 					onclick={() => (deleteModalOpen = false)}
 					class="p-0.5 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -251,11 +252,11 @@
 			</div>
 			<div class="p-3">
 				<p class="text-[11px] text-muted mb-3">
-					Supprimer "{data.collection.name}" ?
+					{localeStore.t('collection.deleteConfirm', { name: data.collection.name })}
 				</p>
 				{#if data.snippets.length > 0 || data.childCollections.length > 0}
 					<p class="text-[10px] text-red-500 mb-3">
-						Contient {data.snippets.length} snippet(s) et {data.childCollections.length} sous-collection(s).
+						{localeStore.t('collection.deleteInfo', { snippets: data.snippets.length, collections: data.childCollections.length })}
 					</p>
 				{/if}
 				<form
@@ -276,14 +277,14 @@
 							onclick={() => (deleteModalOpen = false)}
 							class="px-2 py-1 text-[11px] text-muted hover:text-foreground transition-colors"
 						>
-							Annuler
+							{localeStore.t('collection.deleteCancel')}
 						</button>
 						<button
 							type="submit"
 							disabled={data.snippets.length > 0 || data.childCollections.length > 0}
 							class="px-2.5 py-1 text-[11px] bg-red-500 text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
 						>
-							Supprimer
+							{localeStore.t('collection.deleteSubmit')}
 						</button>
 					</div>
 				</form>

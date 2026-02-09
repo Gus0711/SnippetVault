@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet, Collection, Tag } from '$lib/server/db/schema';
 	import { FileCode, Globe, FileText, Clock } from 'lucide-svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	interface SnippetWithRelations extends Snippet {
 		collection?: Collection | null;
@@ -13,7 +14,7 @@
 		showCollection?: boolean;
 	}
 
-	let { snippets, emptyMessage = 'Aucun snippet', showCollection = true }: Props = $props();
+	let { snippets, emptyMessage = undefined, showCollection = true }: Props = $props();
 
 	const formatDate = (date: Date) => {
 		const now = new Date();
@@ -24,14 +25,14 @@
 			const hours = Math.floor(diff / (1000 * 60 * 60));
 			if (hours === 0) {
 				const minutes = Math.floor(diff / (1000 * 60));
-				return minutes <= 1 ? "à l'instant" : `il y a ${minutes} min`;
+				return minutes <= 1 ? localeStore.t('time.justNow') : localeStore.t('time.minutesAgo', { count: minutes });
 			}
-			return `il y a ${hours}h`;
+			return localeStore.t('time.hoursAgo', { count: hours });
 		}
-		if (days === 1) return 'hier';
-		if (days < 7) return `il y a ${days} jours`;
+		if (days === 1) return localeStore.t('time.yesterday');
+		if (days < 7) return localeStore.t('time.daysAgo', { count: days });
 
-		return date.toLocaleDateString('fr-FR', {
+		return date.toLocaleDateString(localeStore.locale === 'en' ? 'en-US' : 'fr-FR', {
 			day: 'numeric',
 			month: 'short',
 			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
@@ -42,7 +43,7 @@
 {#if snippets.length === 0}
 	<div class="text-center py-12">
 		<FileText size={40} class="mx-auto text-muted mb-3 opacity-50" />
-		<p class="text-muted text-sm">{emptyMessage}</p>
+		<p class="text-muted text-sm">{emptyMessage || localeStore.t('snippetList.noSnippets')}</p>
 	</div>
 {:else}
 	<div class="divide-y divide-border">
@@ -57,7 +58,7 @@
 						<div class="flex items-center gap-2">
 							<h3 class="font-medium text-foreground truncate">{snippet.title}</h3>
 							{#if snippet.status === 'published'}
-								<span title="Publié"><Globe size={14} class="text-accent shrink-0" /></span>
+								<span title={localeStore.t('snippetList.published')}><Globe size={14} class="text-accent shrink-0" /></span>
 							{/if}
 						</div>
 
@@ -79,7 +80,7 @@
 								<span
 									class="px-1.5 py-0.5 rounded bg-surface text-muted text-[10px] uppercase tracking-wide"
 								>
-									Brouillon
+									{localeStore.t('snippetList.draft')}
 								</span>
 							{/if}
 						</div>

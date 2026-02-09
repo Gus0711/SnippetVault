@@ -24,18 +24,18 @@ export const actions: Actions = {
 		const password = formData.get('password')?.toString();
 
 		if (!email || !password) {
-			return fail(400, { error: 'Email et mot de passe requis' });
+			return fail(400, { error: 'auth.login.emailPasswordRequired' as const });
 		}
 
 		const user = await db.select().from(users).where(eq(users.email, email)).get();
 
 		if (!user) {
-			return fail(400, { error: 'Email ou mot de passe incorrect' });
+			return fail(400, { error: 'auth.login.invalidCredentials' as const });
 		}
 
 		const validPassword = verifyPassword(password, user.passwordHash);
 		if (!validPassword) {
-			return fail(400, { error: 'Email ou mot de passe incorrect' });
+			return fail(400, { error: 'auth.login.invalidCredentials' as const });
 		}
 
 		const { session, token } = await createSession(user.id);

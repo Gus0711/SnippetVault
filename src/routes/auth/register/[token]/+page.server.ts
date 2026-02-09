@@ -40,15 +40,15 @@ export const actions: Actions = {
 		const confirmPassword = formData.get('confirmPassword')?.toString();
 
 		if (!name || !password || !confirmPassword) {
-			return fail(400, { error: 'Tous les champs sont requis' });
+			return fail(400, { error: 'auth.register.allFieldsRequired' as const });
 		}
 
 		if (password.length < 8) {
-			return fail(400, { error: 'Le mot de passe doit contenir au moins 8 caractères' });
+			return fail(400, { error: 'auth.register.passwordTooShort' as const });
 		}
 
 		if (password !== confirmPassword) {
-			return fail(400, { error: 'Les mots de passe ne correspondent pas' });
+			return fail(400, { error: 'auth.register.passwordMismatch' as const });
 		}
 
 		const invitation = await db
@@ -64,7 +64,7 @@ export const actions: Actions = {
 			.get();
 
 		if (!invitation) {
-			return fail(400, { error: 'Invitation invalide ou expirée' });
+			return fail(400, { error: 'auth.register.invalidInvitation' as const });
 		}
 
 		// Check if email already exists
@@ -75,7 +75,7 @@ export const actions: Actions = {
 			.get();
 
 		if (existingUser) {
-			return fail(400, { error: 'Un compte existe déjà avec cet email' });
+			return fail(400, { error: 'auth.register.emailExists' as const });
 		}
 
 		// Check if this is the first user (will be admin)

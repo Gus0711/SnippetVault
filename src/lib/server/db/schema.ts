@@ -12,6 +12,9 @@ export const users = sqliteTable('users', {
 	themePreference: text('theme_preference', { enum: ['light', 'dark', 'system'] })
 		.notNull()
 		.default('system'),
+	languagePreference: text('language_preference', { enum: ['fr', 'en'] })
+		.notNull()
+		.default('fr'),
 	githubToken: text('github_token'), // Encrypted GitHub PAT for Gist export
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()

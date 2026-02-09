@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	let { form } = $props();
 	let loading = $state(false);
@@ -11,8 +12,21 @@
 		<div class="flex flex-col items-center mb-8">
 			<img src="/images/logo-full.png" alt="SnippetVault" class="h-16 mb-4" />
 		</div>
-		<h1 class="text-xl font-semibold text-foreground mb-2">Configuration initiale</h1>
-		<p class="text-sm text-muted mb-6">Créez le premier compte administrateur</p>
+
+		<!-- Language toggle -->
+		<div class="flex justify-end mb-4 gap-1">
+			<button
+				onclick={() => { localeStore.locale = 'fr'; }}
+				class="px-2 py-0.5 text-[11px] rounded transition-colors {localeStore.locale === 'fr' ? 'bg-accent/10 text-accent font-medium' : 'text-muted hover:text-foreground'}"
+			>FR</button>
+			<button
+				onclick={() => { localeStore.locale = 'en'; }}
+				class="px-2 py-0.5 text-[11px] rounded transition-colors {localeStore.locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-muted hover:text-foreground'}"
+			>EN</button>
+		</div>
+
+		<h1 class="text-xl font-semibold text-foreground mb-2">{localeStore.t('auth.setup.title')}</h1>
+		<p class="text-sm text-muted mb-6">{localeStore.t('auth.setup.subtitle')}</p>
 
 		<form
 			method="POST"
@@ -30,7 +44,7 @@
 			class="space-y-4"
 		>
 			<div>
-				<label for="name" class="block text-sm font-medium text-foreground mb-1">Nom</label>
+				<label for="name" class="block text-sm font-medium text-foreground mb-1">{localeStore.t('auth.setup.name')}</label>
 				<input
 					type="text"
 					id="name"
@@ -39,12 +53,12 @@
 					autocomplete="name"
 					class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground
 						   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-					placeholder="Votre nom"
+					placeholder={localeStore.t('auth.setup.namePlaceholder')}
 				/>
 			</div>
 
 			<div>
-				<label for="email" class="block text-sm font-medium text-foreground mb-1">Email</label>
+				<label for="email" class="block text-sm font-medium text-foreground mb-1">{localeStore.t('auth.setup.email')}</label>
 				<input
 					type="email"
 					id="email"
@@ -59,7 +73,7 @@
 
 			<div>
 				<label for="password" class="block text-sm font-medium text-foreground mb-1"
-					>Mot de passe</label
+					>{localeStore.t('auth.setup.password')}</label
 				>
 				<input
 					type="password"
@@ -70,13 +84,13 @@
 					autocomplete="new-password"
 					class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground
 						   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-					placeholder="Minimum 8 caractères"
+					placeholder={localeStore.t('auth.setup.passwordPlaceholder')}
 				/>
 			</div>
 
 			<div>
 				<label for="confirmPassword" class="block text-sm font-medium text-foreground mb-1"
-					>Confirmer le mot de passe</label
+					>{localeStore.t('auth.setup.confirmPassword')}</label
 				>
 				<input
 					type="password"
@@ -90,7 +104,7 @@
 			</div>
 
 			{#if form?.error}
-				<p class="text-sm text-red-500">{form.error}</p>
+				<p class="text-sm text-red-500">{localeStore.t(form.error)}</p>
 			{/if}
 
 			<button
@@ -100,7 +114,7 @@
 					   hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2
 					   disabled:opacity-50 disabled:cursor-not-allowed"
 			>
-				{loading ? 'Création...' : 'Créer le compte admin'}
+				{loading ? localeStore.t('auth.setup.loading') : localeStore.t('auth.setup.submit')}
 			</button>
 		</form>
 	</div>

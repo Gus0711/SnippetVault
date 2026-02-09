@@ -19,9 +19,11 @@
 		Pencil,
 		Lock,
 		Github,
-		ExternalLink
+		ExternalLink,
+		Globe
 	} from 'lucide-svelte';
 	import { tagColors, getRandomTagColor } from '$lib/utils/colors';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	interface TagData {
 		id: string;
@@ -182,7 +184,7 @@
 	}
 
 	function formatDate(date: Date): string {
-		return new Date(date).toLocaleDateString('fr-FR', {
+		return new Date(date).toLocaleDateString(localeStore.locale === 'en' ? 'en-US' : 'fr-FR', {
 			day: 'numeric',
 			month: 'short',
 			year: 'numeric'
@@ -222,7 +224,7 @@
 			URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error('Export error:', error);
-			exportError = "Erreur lors de l'export des donnees";
+			exportError = 'settings.error.exportError';
 		} finally {
 			isExporting = false;
 		}
@@ -252,22 +254,21 @@
 </script>
 
 <svelte:head>
-	<title>Parametres - SnippetVault</title>
+	<title>{localeStore.t('settings.title')} - SnippetVault</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto px-4 py-8">
-	<h1 class="text-2xl font-semibold text-foreground mb-8">Parametres</h1>
+	<h1 class="text-2xl font-semibold text-foreground mb-8">{localeStore.t('settings.title')}</h1>
 
 	<!-- API Key Section -->
 	<section class="bg-surface border border-border rounded-lg p-6">
 		<div class="flex items-center gap-3 mb-4">
 			<Key size={20} class="text-muted" />
-			<h2 class="text-lg font-medium text-foreground">Cle API</h2>
+			<h2 class="text-lg font-medium text-foreground">{localeStore.t('settings.apiKey')}</h2>
 		</div>
 
 		<p class="text-sm text-muted mb-4">
-			Utilisez cette cle pour acceder a l'API REST depuis des scripts ou des outils externes.
-			Gardez-la secrete.
+			{localeStore.t('settings.apiKeyDesc')}
 		</p>
 
 		<!-- API Key Display -->
@@ -281,7 +282,7 @@
 				type="button"
 				onclick={copyToClipboard}
 				class="p-2 border border-border rounded hover:bg-surface transition-colors"
-				title="Copier la cle complete"
+				title={localeStore.t('settings.copyApiKey')}
 			>
 				{#if copied}
 					<Check size={18} class="text-green-500" />
@@ -298,11 +299,10 @@
 					<AlertTriangle size={20} class="text-yellow-500 shrink-0 mt-0.5" />
 					<div>
 						<p class="text-sm text-foreground font-medium mb-2">
-							Etes-vous sur de vouloir regenerer la cle ?
+							{localeStore.t('settings.regenerateConfirmTitle')}
 						</p>
 						<p class="text-sm text-muted mb-3">
-							L'ancienne cle sera immediatement invalidee. Tous les scripts et integrations
-							utilisant l'ancienne cle cesseront de fonctionner.
+							{localeStore.t('settings.regenerateConfirmDesc')}
 						</p>
 						<div class="flex items-center gap-2">
 							<form
@@ -324,9 +324,9 @@
 								>
 									{#if isRegenerating}
 										<RefreshCw size={14} class="inline animate-spin mr-1" />
-										Regeneration...
+										{localeStore.t('settings.regenerating')}
 									{:else}
-										Confirmer
+										{localeStore.t('settings.regenerateConfirm')}
 									{/if}
 								</button>
 							</form>
@@ -335,7 +335,7 @@
 								onclick={() => (showConfirm = false)}
 								class="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
 							>
-								Annuler
+								{localeStore.t('settings.regenerateCancel')}
 							</button>
 						</div>
 					</div>
@@ -348,16 +348,16 @@
 				class="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
 			>
 				<RefreshCw size={14} />
-				Regenerer la cle API
+				{localeStore.t('settings.regenerateButton')}
 			</button>
 		{/if}
 
 		{#if form?.error}
-			<p class="text-sm text-red-500 mt-4">{form.error}</p>
+			<p class="text-sm text-red-500 mt-4">{localeStore.t(form.error)}</p>
 		{/if}
 
 		{#if form?.success}
-			<p class="text-sm text-green-500 mt-4">Cle API regeneree avec succes.</p>
+			<p class="text-sm text-green-500 mt-4">{localeStore.t('settings.regenerateSuccess')}</p>
 		{/if}
 	</section>
 
@@ -365,11 +365,11 @@
 	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
 		<div class="flex items-center gap-3 mb-4">
 			<Lock size={20} class="text-muted" />
-			<h2 class="text-lg font-medium text-foreground">Securite</h2>
+			<h2 class="text-lg font-medium text-foreground">{localeStore.t('settings.security')}</h2>
 		</div>
 
 		<p class="text-sm text-muted mb-4">
-			Modifiez votre mot de passe. Le nouveau mot de passe doit contenir au moins 8 caracteres.
+			{localeStore.t('settings.securityDesc')}
 		</p>
 
 		<form
@@ -386,7 +386,7 @@
 		>
 			<div>
 				<label for="currentPassword" class="block text-sm font-medium text-foreground mb-1">
-					Mot de passe actuel
+					{localeStore.t('settings.currentPassword')}
 				</label>
 				<input
 					type="password"
@@ -402,7 +402,7 @@
 
 			<div>
 				<label for="newPassword" class="block text-sm font-medium text-foreground mb-1">
-					Nouveau mot de passe
+					{localeStore.t('settings.newPassword')}
 				</label>
 				<input
 					type="password"
@@ -419,7 +419,7 @@
 
 			<div>
 				<label for="confirmPassword" class="block text-sm font-medium text-foreground mb-1">
-					Confirmer le nouveau mot de passe
+					{localeStore.t('settings.confirmNewPassword')}
 				</label>
 				<input
 					type="password"
@@ -435,11 +435,11 @@
 			</div>
 
 			{#if form?.passwordError}
-				<p class="text-sm text-red-500">{form.passwordError}</p>
+				<p class="text-sm text-red-500">{localeStore.t(form.passwordError)}</p>
 			{/if}
 
 			{#if form?.passwordSuccess}
-				<p class="text-sm text-green-500">Mot de passe modifie avec succes.</p>
+				<p class="text-sm text-green-500">{localeStore.t('settings.passwordChanged')}</p>
 			{/if}
 
 			<button
@@ -449,9 +449,9 @@
 			>
 				{#if isChangingPassword}
 					<RefreshCw size={14} class="inline animate-spin mr-1" />
-					Modification...
+					{localeStore.t('settings.changingPassword')}
 				{:else}
-					Changer le mot de passe
+					{localeStore.t('settings.changePassword')}
 				{/if}
 			</button>
 		</form>
@@ -461,11 +461,11 @@
 	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
 		<div class="flex items-center gap-3 mb-4">
 			<Github size={20} class="text-muted" />
-			<h2 class="text-lg font-medium text-foreground">Integrations</h2>
+			<h2 class="text-lg font-medium text-foreground">{localeStore.t('settings.integrations')}</h2>
 		</div>
 
 		<p class="text-sm text-muted mb-4">
-			Connectez votre compte GitHub pour exporter vos snippets vers GitHub Gist.
+			{localeStore.t('settings.integrationsDesc')}
 		</p>
 
 		{#if hasGithubToken}
@@ -473,19 +473,19 @@
 				<div class="flex items-center gap-3">
 					<Check size={20} class="text-green-500" />
 					<div>
-						<p class="text-sm font-medium text-foreground">GitHub connecte</p>
-						<p class="text-xs text-muted">Vous pouvez exporter vos snippets vers GitHub Gist</p>
+						<p class="text-sm font-medium text-foreground">{localeStore.t('settings.githubConnected')}</p>
+						<p class="text-xs text-muted">{localeStore.t('settings.githubConnectedDesc')}</p>
 					</div>
 				</div>
 				{#if showRemoveGithubConfirm}
 					<div class="flex items-center gap-2">
-						<span class="text-xs text-muted">Confirmer ?</span>
+						<span class="text-xs text-muted">{localeStore.t('settings.githubDisconnectConfirm')}</span>
 						<form method="POST" action="?/removeGithubToken" use:enhance>
 							<button
 								type="submit"
 								class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
 							>
-								Supprimer
+								{localeStore.t('settings.githubDisconnectDelete')}
 							</button>
 						</form>
 						<button
@@ -493,7 +493,7 @@
 							onclick={() => (showRemoveGithubConfirm = false)}
 							class="px-2 py-1 text-xs text-muted hover:text-foreground transition-colors"
 						>
-							Annuler
+							{localeStore.t('settings.githubDisconnectCancel')}
 						</button>
 					</div>
 				{:else}
@@ -503,7 +503,7 @@
 						class="flex items-center gap-1 px-3 py-1.5 text-sm text-red-500 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors"
 					>
 						<Trash2 size={14} />
-						Deconnecter
+						{localeStore.t('settings.githubDisconnect')}
 					</button>
 				{/if}
 			</div>
@@ -535,7 +535,7 @@
 							   placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent font-mono text-sm"
 					/>
 					<p class="text-xs text-muted mt-1">
-						Le token doit avoir le scope <code class="bg-surface px-1 rounded">gist</code>
+						{@html localeStore.t('settings.githubTokenScope')}
 					</p>
 				</div>
 
@@ -547,10 +547,10 @@
 					>
 						{#if isSavingGithubToken}
 							<RefreshCw size={14} class="animate-spin" />
-							Verification...
+							{localeStore.t('settings.githubVerifying')}
 						{:else}
 							<Github size={14} />
-							Connecter GitHub
+							{localeStore.t('settings.githubConnect')}
 						{/if}
 					</button>
 					<a
@@ -559,31 +559,59 @@
 						class="flex items-center gap-1 text-sm text-accent hover:underline"
 					>
 						<ExternalLink size={14} />
-						Creer un token
+						{localeStore.t('settings.githubCreateToken')}
 					</a>
 				</div>
 			</form>
 		{/if}
 
 		{#if form?.githubError}
-			<p class="text-sm text-red-500 mt-4">{form.githubError}</p>
+			<p class="text-sm text-red-500 mt-4">{localeStore.t(form.githubError)}</p>
 		{/if}
 
 		{#if form?.githubSuccess}
-			<p class="text-sm text-green-500 mt-4">Token GitHub enregistre avec succes.</p>
+			<p class="text-sm text-green-500 mt-4">{localeStore.t('settings.githubTokenSaved')}</p>
 		{/if}
+	</section>
+
+	<!-- Language Section -->
+	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
+		<div class="flex items-center gap-3 mb-4">
+			<Globe size={20} class="text-muted" />
+			<h2 class="text-lg font-medium text-foreground">{localeStore.t('settings.language')}</h2>
+		</div>
+
+		<p class="text-sm text-muted mb-4">
+			{localeStore.t('settings.languageDesc')}
+		</p>
+
+		<div class="flex items-center gap-3">
+			<button
+				type="button"
+				onclick={() => { localeStore.locale = 'fr'; localeStore.saveToServer(); }}
+				class="px-4 py-2 text-sm font-medium border rounded transition-colors {localeStore.locale === 'fr' ? 'bg-accent/10 text-accent border-accent/40' : 'border-border text-muted hover:text-foreground hover:bg-surface'}"
+			>
+				Francais
+			</button>
+			<button
+				type="button"
+				onclick={() => { localeStore.locale = 'en'; localeStore.saveToServer(); }}
+				class="px-4 py-2 text-sm font-medium border rounded transition-colors {localeStore.locale === 'en' ? 'bg-accent/10 text-accent border-accent/40' : 'border-border text-muted hover:text-foreground hover:bg-surface'}"
+			>
+				English
+			</button>
+		</div>
 	</section>
 
 	<!-- Export Section -->
 	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
 		<div class="flex items-center gap-3 mb-4">
 			<Archive size={20} class="text-muted" />
-			<h2 class="text-lg font-medium text-foreground">Sauvegarde</h2>
+			<h2 class="text-lg font-medium text-foreground">{localeStore.t('settings.backup')}</h2>
 		</div>
 
 		<p class="text-sm text-muted mb-4">
-			Exportez toutes vos donnees dans un fichier ZIP contenant vos snippets, collections, tags et
-			fichiers uploades. Ce fichier peut etre utilise pour une sauvegarde ou une migration.
+			{localeStore.t('settings.backupDesc')}
 		</p>
 
 		<div class="flex items-center gap-4">
@@ -595,26 +623,26 @@
 			>
 				{#if isExporting}
 					<RefreshCw size={16} class="animate-spin" />
-					Export en cours...
+					{localeStore.t('settings.exporting')}
 				{:else}
 					<Download size={16} />
-					Exporter mes donnees
+					{localeStore.t('settings.exportData')}
 				{/if}
 			</button>
 		</div>
 
 		{#if exportError}
-			<p class="text-sm text-red-500 mt-4">{exportError}</p>
+			<p class="text-sm text-red-500 mt-4">{localeStore.t(exportError)}</p>
 		{/if}
 
 		<div class="mt-4 text-xs text-muted">
-			<p class="font-medium text-foreground mb-1">Contenu du fichier ZIP :</p>
+			<p class="font-medium text-foreground mb-1">{localeStore.t('settings.zipContent')}</p>
 			<ul class="list-disc list-inside space-y-0.5">
-				<li>snippets.json - Tous vos snippets avec leurs blocs et tags</li>
-				<li>collections.json - Arborescence de vos collections</li>
-				<li>tags.json - Liste de vos tags</li>
-				<li>metadata.json - Informations sur l'export</li>
-				<li>uploads/ - Vos fichiers uploades (images, etc.)</li>
+				<li>{localeStore.t('settings.zipSnippets')}</li>
+				<li>{localeStore.t('settings.zipCollections')}</li>
+				<li>{localeStore.t('settings.zipTags')}</li>
+				<li>{localeStore.t('settings.zipMetadata')}</li>
+				<li>{localeStore.t('settings.zipUploads')}</li>
 			</ul>
 		</div>
 	</section>
@@ -624,7 +652,7 @@
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-3">
 				<Tag size={20} class="text-muted" />
-				<h2 class="text-lg font-medium text-foreground">Tags</h2>
+				<h2 class="text-lg font-medium text-foreground">{localeStore.t('settings.tags')}</h2>
 			</div>
 			<button
 				type="button"
@@ -636,16 +664,16 @@
 				class="flex items-center gap-2 px-3 py-1.5 bg-accent text-white text-sm font-medium rounded hover:bg-accent/90 transition-colors"
 			>
 				<Plus size={14} />
-				Nouveau tag
+				{localeStore.t('settings.newTag')}
 			</button>
 		</div>
 
 		<p class="text-sm text-muted mb-4">
-			Gerez vos tags pour organiser vos snippets. Les tags non utilises peuvent etre supprimes.
+			{localeStore.t('settings.tagsDesc')}
 		</p>
 
 		{#if data.tags.length === 0}
-			<p class="text-sm text-muted py-4 text-center">Aucun tag</p>
+			<p class="text-sm text-muted py-4 text-center">{localeStore.t('settings.noTags')}</p>
 		{:else}
 			<div class="space-y-2">
 				{#each data.tags as tag (tag.id)}
@@ -665,7 +693,7 @@
 								type="button"
 								onclick={() => openEditTag(tag)}
 								class="p-1.5 text-muted hover:text-foreground transition-colors rounded hover:bg-surface"
-								title="Modifier"
+								title={localeStore.t('settings.editTag')}
 							>
 								<Pencil size={14} />
 							</button>
@@ -673,7 +701,7 @@
 								type="button"
 								onclick={() => openDeleteTag(tag)}
 								class="p-1.5 text-red-500 hover:text-red-400 transition-colors rounded hover:bg-surface"
-								title="Supprimer"
+								title={localeStore.t('settings.deleteTag')}
 							>
 								<Trash2 size={14} />
 							</button>
@@ -684,25 +712,25 @@
 		{/if}
 
 		{#if form?.tagError}
-			<p class="text-sm text-red-500 mt-4">{form.tagError}</p>
+			<p class="text-sm text-red-500 mt-4">{localeStore.t(form.tagError)}</p>
 		{/if}
 	</section>
 
 	<!-- API Documentation Section -->
 	<section class="bg-surface border border-border rounded-lg p-6 mt-6">
-		<h2 class="text-lg font-medium text-foreground mb-4">Documentation API</h2>
+		<h2 class="text-lg font-medium text-foreground mb-4">{localeStore.t('settings.apiDocs')}</h2>
 
 		<div class="space-y-4 text-sm">
 			<div>
-				<h3 class="font-medium text-foreground mb-1">Authentification</h3>
-				<p class="text-muted mb-2">Ajoutez l'en-tete Authorization a chaque requete :</p>
+				<h3 class="font-medium text-foreground mb-1">{localeStore.t('settings.apiAuth')}</h3>
+				<p class="text-muted mb-2">{localeStore.t('settings.apiAuthDesc')}</p>
 				<code class="block bg-background border border-border rounded px-3 py-2 font-mono text-xs">
 					Authorization: Bearer {maskApiKey(apiKey)}
 				</code>
 			</div>
 
 			<div>
-				<h3 class="font-medium text-foreground mb-2">Endpoints disponibles</h3>
+				<h3 class="font-medium text-foreground mb-2">{localeStore.t('settings.apiEndpoints')}</h3>
 				<div class="space-y-2">
 					<div class="flex items-start gap-2">
 						<span class="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-xs font-mono rounded">
@@ -710,7 +738,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/snippets</code>
-							<span class="text-muted ml-2">- Liste des snippets</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiListSnippets')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -719,7 +747,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/snippets</code>
-							<span class="text-muted ml-2">- Creer un snippet</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiCreateSnippet')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -728,7 +756,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/snippets/:id</code>
-							<span class="text-muted ml-2">- Details d'un snippet</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiSnippetDetail')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -737,7 +765,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/snippets/:id</code>
-							<span class="text-muted ml-2">- Modifier un snippet</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiUpdateSnippet')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -746,7 +774,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/snippets/:id</code>
-							<span class="text-muted ml-2">- Supprimer un snippet</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiDeleteSnippet')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -755,7 +783,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/collections</code>
-							<span class="text-muted ml-2">- Liste des collections</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiListCollections')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -764,7 +792,7 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/tags</code>
-							<span class="text-muted ml-2">- Liste des tags</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiListTags')}</span>
 						</div>
 					</div>
 					<div class="flex items-start gap-2">
@@ -773,17 +801,17 @@
 						</span>
 						<div>
 							<code class="font-mono text-xs text-foreground">/api/v1/search?q=query</code>
-							<span class="text-muted ml-2">- Recherche full-text</span>
+							<span class="text-muted ml-2">{localeStore.t('settings.apiSearch')}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<div>
-				<h3 class="font-medium text-foreground mb-1">Format de reponse</h3>
-				<p class="text-muted">Succes : <code class="font-mono text-xs">{'{ data: ... }'}</code></p>
+				<h3 class="font-medium text-foreground mb-1">{localeStore.t('settings.apiResponseFormat')}</h3>
+				<p class="text-muted">{localeStore.t('settings.apiSuccess')} <code class="font-mono text-xs">{'{ data: ... }'}</code></p>
 				<p class="text-muted">
-					Erreur : <code class="font-mono text-xs">{'{ error: "message" }'}</code>
+					{localeStore.t('settings.apiError')} <code class="font-mono text-xs">{'{ error: "message" }'}</code>
 				</p>
 			</div>
 		</div>
@@ -794,7 +822,7 @@
 		<div class="mt-8 pt-8 border-t border-border">
 			<div class="flex items-center gap-3 mb-6">
 				<Shield size={24} class="text-accent" />
-				<h2 class="text-xl font-semibold text-foreground">Administration</h2>
+				<h2 class="text-xl font-semibold text-foreground">{localeStore.t('settings.admin')}</h2>
 			</div>
 
 			<!-- Invitations Section -->
@@ -802,28 +830,28 @@
 				<div class="flex items-center justify-between mb-4">
 					<div class="flex items-center gap-3">
 						<Mail size={20} class="text-muted" />
-						<h3 class="text-lg font-medium text-foreground">Invitations</h3>
+						<h3 class="text-lg font-medium text-foreground">{localeStore.t('settings.invitations')}</h3>
 					</div>
 					<button
 						type="button"
 						onclick={() => (showInviteModal = true)}
 						class="flex items-center gap-2 px-3 py-1.5 bg-accent text-white text-sm font-medium rounded hover:bg-accent/90 transition-colors"
 					>
-						Creer une invitation
+						{localeStore.t('settings.createInvitation')}
 					</button>
 				</div>
 
 				{#if data.pendingInvitations.length === 0}
-					<p class="text-sm text-muted">Aucune invitation en attente</p>
+					<p class="text-sm text-muted">{localeStore.t('settings.noInvitations')}</p>
 				{:else}
 					<div class="overflow-x-auto">
 						<table class="w-full text-sm">
 							<thead>
 								<tr class="border-b border-border">
-									<th class="text-left py-2 text-muted font-medium">Email</th>
-									<th class="text-left py-2 text-muted font-medium">Invite par</th>
-									<th class="text-left py-2 text-muted font-medium">Expire le</th>
-									<th class="text-right py-2 text-muted font-medium">Actions</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.invEmail')}</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.invInvitedBy')}</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.invExpiresAt')}</th>
+									<th class="text-right py-2 text-muted font-medium">{localeStore.t('settings.invActions')}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -838,7 +866,7 @@
 													type="button"
 													onclick={() => copyInvitationLink(invitation.token, invitation.id)}
 													class="p-1.5 text-muted hover:text-foreground transition-colors"
-													title="Copier le lien"
+													title={localeStore.t('settings.invCopyLink')}
 												>
 													{#if copiedInvitationId === invitation.id}
 														<Check size={16} class="text-green-500" />
@@ -850,7 +878,7 @@
 													type="button"
 													onclick={() => openRevokeInvitation(invitation)}
 													class="p-1.5 text-red-500 hover:text-red-400 transition-colors"
-													title="Revoquer"
+													title={localeStore.t('settings.invRevoke')}
 												>
 													<Trash2 size={16} />
 												</button>
@@ -864,7 +892,7 @@
 				{/if}
 
 				{#if form?.invitationError}
-					<p class="text-sm text-red-500 mt-4">{form.invitationError}</p>
+					<p class="text-sm text-red-500 mt-4">{localeStore.t(form.invitationError)}</p>
 				{/if}
 			</section>
 
@@ -872,21 +900,21 @@
 			<section class="bg-surface border border-border rounded-lg p-6">
 				<div class="flex items-center gap-3 mb-4">
 					<Users size={20} class="text-muted" />
-					<h3 class="text-lg font-medium text-foreground">Utilisateurs</h3>
+					<h3 class="text-lg font-medium text-foreground">{localeStore.t('settings.users')}</h3>
 				</div>
 
 				{#if data.allUsers.length === 0}
-					<p class="text-sm text-muted">Aucun utilisateur</p>
+					<p class="text-sm text-muted">{localeStore.t('settings.noInvitations')}</p>
 				{:else}
 					<div class="overflow-x-auto">
 						<table class="w-full text-sm">
 							<thead>
 								<tr class="border-b border-border">
-									<th class="text-left py-2 text-muted font-medium">Nom</th>
-									<th class="text-left py-2 text-muted font-medium">Email</th>
-									<th class="text-left py-2 text-muted font-medium">Role</th>
-									<th class="text-left py-2 text-muted font-medium">Inscription</th>
-									<th class="text-right py-2 text-muted font-medium">Actions</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.userName')}</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.userEmail')}</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.userRole')}</th>
+									<th class="text-left py-2 text-muted font-medium">{localeStore.t('settings.userRegistered')}</th>
+									<th class="text-right py-2 text-muted font-medium">{localeStore.t('settings.userActions')}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -910,12 +938,12 @@
 													type="button"
 													onclick={() => openDeleteUser(user)}
 													class="p-1.5 text-red-500 hover:text-red-400 transition-colors"
-													title="Supprimer"
+													title={localeStore.t('settings.deleteTag')}
 												>
 													<Trash2 size={16} />
 												</button>
 											{:else}
-												<span class="text-xs text-muted">(vous)</span>
+												<span class="text-xs text-muted">{localeStore.t('settings.userYou')}</span>
 											{/if}
 										</td>
 									</tr>
@@ -926,7 +954,7 @@
 				{/if}
 
 				{#if form?.userError}
-					<p class="text-sm text-red-500 mt-4">{form.userError}</p>
+					<p class="text-sm text-red-500 mt-4">{localeStore.t(form.userError)}</p>
 				{/if}
 			</section>
 		</div>
@@ -944,7 +972,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Creer une invitation</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('settings.createInvitationTitle')}</h2>
 				<button
 					onclick={() => (showInviteModal = false)}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -964,17 +992,17 @@
 				}}
 				class="p-4"
 			>
-				<label class="block text-sm font-medium text-foreground mb-2"> Email </label>
+				<label class="block text-sm font-medium text-foreground mb-2"> {localeStore.t('settings.invitationEmail')} </label>
 				<input
 					type="email"
 					name="email"
 					bind:value={inviteEmail}
 					required
-					placeholder="utilisateur@example.com"
+					placeholder={localeStore.t('settings.invitationEmailPlaceholder')}
 					class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 				/>
 				<p class="text-xs text-muted mt-2">
-					Un lien d'inscription sera genere, valide pendant 7 jours.
+					{localeStore.t('settings.invitationHint')}
 				</p>
 				<div class="flex justify-end gap-2 mt-4">
 					<button
@@ -982,7 +1010,7 @@
 						onclick={() => (showInviteModal = false)}
 						class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 					>
-						Annuler
+						{localeStore.t('settings.invitationCancel')}
 					</button>
 					<button
 						type="submit"
@@ -990,9 +1018,9 @@
 						class="px-4 py-2 text-sm bg-accent text-white rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
 					>
 						{#if isCreatingInvitation}
-							Creation...
+							{localeStore.t('settings.invitationCreating')}
 						{:else}
-							Creer
+							{localeStore.t('settings.invitationCreate')}
 						{/if}
 					</button>
 				</div>
@@ -1012,7 +1040,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Revoquer l'invitation</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('settings.revokeInvitationTitle')}</h2>
 				<button
 					onclick={() => (showRevokeModal = false)}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -1022,8 +1050,7 @@
 			</div>
 			<div class="p-4">
 				<p class="text-sm text-muted mb-4">
-					Voulez-vous vraiment revoquer l'invitation pour
-					<span class="text-foreground font-medium">{invitationToRevoke.email}</span> ?
+					{localeStore.t('settings.revokeInvitationConfirm', { email: invitationToRevoke.email })}
 				</p>
 				<form method="POST" action="?/revokeInvitation" use:enhance>
 					<input type="hidden" name="invitationId" value={invitationToRevoke.id} />
@@ -1033,13 +1060,13 @@
 							onclick={() => (showRevokeModal = false)}
 							class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 						>
-							Annuler
+							{localeStore.t('settings.revokeCancel')}
 						</button>
 						<button
 							type="submit"
 							class="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:opacity-90 transition-opacity"
 						>
-							Revoquer
+							{localeStore.t('settings.revokeSubmit')}
 						</button>
 					</div>
 				</form>
@@ -1059,7 +1086,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Supprimer l'utilisateur</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('settings.deleteUserTitle')}</h2>
 				<button
 					onclick={() => (showDeleteUserModal = false)}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -1069,11 +1096,10 @@
 			</div>
 			<div class="p-4">
 				<p class="text-sm text-muted mb-2">
-					Voulez-vous vraiment supprimer l'utilisateur
-					<span class="text-foreground font-medium">{userToDelete.name}</span> ?
+					{localeStore.t('settings.deleteUserConfirm', { name: userToDelete.name })}
 				</p>
 				<p class="text-sm text-red-500 mb-4">
-					Toutes ses donnees (snippets, collections, tags) seront definitivement supprimees.
+					{localeStore.t('settings.deleteUserWarning')}
 				</p>
 				<form method="POST" action="?/deleteUser" use:enhance>
 					<input type="hidden" name="userId" value={userToDelete.id} />
@@ -1083,13 +1109,13 @@
 							onclick={() => (showDeleteUserModal = false)}
 							class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 						>
-							Annuler
+							{localeStore.t('settings.deleteUserCancel')}
 						</button>
 						<button
 							type="submit"
 							class="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:opacity-90 transition-opacity"
 						>
-							Supprimer
+							{localeStore.t('settings.deleteUserSubmit')}
 						</button>
 					</div>
 				</form>
@@ -1109,7 +1135,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Nouveau tag</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('settings.newTagTitle')}</h2>
 				<button
 					onclick={() => (showCreateTagModal = false)}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -1118,17 +1144,17 @@
 				</button>
 			</div>
 			<form method="POST" action="?/createTag" use:enhance class="p-4">
-				<label class="block text-sm font-medium text-foreground mb-2">Nom</label>
+				<label class="block text-sm font-medium text-foreground mb-2">{localeStore.t('settings.tagName')}</label>
 				<input
 					type="text"
 					name="name"
 					bind:value={newTagName}
 					required
-					placeholder="Mon tag"
+					placeholder={localeStore.t('settings.tagNamePlaceholder')}
 					class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent mb-4"
 				/>
 
-				<label class="block text-sm font-medium text-foreground mb-2">Couleur</label>
+				<label class="block text-sm font-medium text-foreground mb-2">{localeStore.t('settings.tagColor')}</label>
 				<input type="hidden" name="color" value={newTagColor} />
 				<div class="flex flex-wrap gap-2 mb-4">
 					{#each tagColors as color}
@@ -1142,12 +1168,12 @@
 				</div>
 
 				<div class="flex items-center gap-2 mb-4">
-					<span class="text-sm text-muted">Apercu:</span>
+					<span class="text-sm text-muted">{localeStore.t('settings.tagPreview')}</span>
 					<span
 						class="px-2 py-1 rounded text-sm font-medium"
 						style="background-color: {newTagColor}20; color: {newTagColor}"
 					>
-						{newTagName || 'Mon tag'}
+						{newTagName || localeStore.t('settings.tagNamePlaceholder')}
 					</span>
 				</div>
 
@@ -1157,13 +1183,13 @@
 						onclick={() => (showCreateTagModal = false)}
 						class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 					>
-						Annuler
+						{localeStore.t('settings.tagCancel')}
 					</button>
 					<button
 						type="submit"
 						class="px-4 py-2 text-sm bg-accent text-white rounded-md hover:opacity-90 transition-opacity"
 					>
-						Creer
+						{localeStore.t('settings.tagCreate')}
 					</button>
 				</div>
 			</form>
@@ -1182,7 +1208,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Modifier le tag</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('settings.editTagTitle')}</h2>
 				<button
 					onclick={() => (showEditTagModal = false)}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -1193,7 +1219,7 @@
 			<form method="POST" action="?/updateTag" use:enhance class="p-4">
 				<input type="hidden" name="tagId" value={editingTag.id} />
 
-				<label class="block text-sm font-medium text-foreground mb-2">Nom</label>
+				<label class="block text-sm font-medium text-foreground mb-2">{localeStore.t('settings.tagName')}</label>
 				<input
 					type="text"
 					name="name"
@@ -1202,7 +1228,7 @@
 					class="w-full px-3 py-2 bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent mb-4"
 				/>
 
-				<label class="block text-sm font-medium text-foreground mb-2">Couleur</label>
+				<label class="block text-sm font-medium text-foreground mb-2">{localeStore.t('settings.tagColor')}</label>
 				<input type="hidden" name="color" value={newTagColor} />
 				<div class="flex flex-wrap gap-2 mb-4">
 					{#each tagColors as color}
@@ -1216,12 +1242,12 @@
 				</div>
 
 				<div class="flex items-center gap-2 mb-4">
-					<span class="text-sm text-muted">Apercu:</span>
+					<span class="text-sm text-muted">{localeStore.t('settings.tagPreview')}</span>
 					<span
 						class="px-2 py-1 rounded text-sm font-medium"
 						style="background-color: {newTagColor}20; color: {newTagColor}"
 					>
-						{newTagName || 'Mon tag'}
+						{newTagName || localeStore.t('settings.tagNamePlaceholder')}
 					</span>
 				</div>
 
@@ -1231,13 +1257,13 @@
 						onclick={() => (showEditTagModal = false)}
 						class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 					>
-						Annuler
+						{localeStore.t('settings.editTagCancel')}
 					</button>
 					<button
 						type="submit"
 						class="px-4 py-2 text-sm bg-accent text-white rounded-md hover:opacity-90 transition-opacity"
 					>
-						Enregistrer
+						{localeStore.t('settings.editTagSave')}
 					</button>
 				</div>
 			</form>
@@ -1256,7 +1282,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Supprimer le tag</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('settings.deleteTagTitle')}</h2>
 				<button
 					onclick={() => (showDeleteTagModal = false)}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -1266,15 +1292,11 @@
 			</div>
 			<div class="p-4">
 				<p class="text-sm text-muted mb-2">
-					Voulez-vous vraiment supprimer le tag
-					<span
-						class="px-1.5 py-0.5 rounded text-sm font-medium"
-						style="background-color: {tagToDelete.color || '#6b7280'}20; color: {tagToDelete.color || '#6b7280'}"
-					>{tagToDelete.name}</span> ?
+					{localeStore.t('settings.deleteTagConfirm', { name: tagToDelete.name })}
 				</p>
 				{#if tagToDelete.usageCount > 0}
 					<p class="text-sm text-yellow-500 mb-4">
-						Ce tag est utilise par {tagToDelete.usageCount} snippet{tagToDelete.usageCount > 1 ? 's' : ''}. Il sera retire de ces snippets.
+						{localeStore.t('settings.deleteTagUsage', { count: tagToDelete.usageCount })}
 					</p>
 				{/if}
 				<form method="POST" action="?/deleteTag" use:enhance>
@@ -1285,13 +1307,13 @@
 							onclick={() => (showDeleteTagModal = false)}
 							class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 						>
-							Annuler
+							{localeStore.t('settings.deleteTagCancel')}
 						</button>
 						<button
 							type="submit"
 							class="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:opacity-90 transition-opacity"
 						>
-							Supprimer
+							{localeStore.t('settings.deleteTagSubmit')}
 						</button>
 					</div>
 				</form>

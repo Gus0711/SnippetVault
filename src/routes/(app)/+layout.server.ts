@@ -54,7 +54,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			email: locals.user.email,
 			name: locals.user.name,
 			role: locals.user.role,
-			themePreference: locals.user.themePreference
+			themePreference: locals.user.themePreference,
+			languagePreference: locals.user.languagePreference
 		},
 		collections: userCollections,
 		sharedCollections,

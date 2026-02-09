@@ -42,6 +42,7 @@
 		Link as LinkIcon
 	} from 'lucide-svelte';
 	import { detectLanguage } from '$lib/utils/colors';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	export interface Block {
 		type: 'markdown' | 'code' | 'image' | 'file';
@@ -144,12 +145,12 @@
 
 	// Callout menu state
 	let showCalloutMenu = $state(false);
-	const calloutTypes = [
-		{ id: 'info', label: 'Info', icon: 'ℹ️', color: '#3b82f6' },
-		{ id: 'warning', label: 'Attention', icon: '⚠️', color: '#f59e0b' },
-		{ id: 'success', label: 'Succes', icon: '✓', color: '#22c55e' },
-		{ id: 'error', label: 'Erreur', icon: '✕', color: '#ef4444' }
-	];
+	const calloutTypes = $derived([
+		{ id: 'info', label: localeStore.t('editor.callout.info'), icon: 'ℹ️', color: '#3b82f6' },
+		{ id: 'warning', label: localeStore.t('editor.callout.warning'), icon: '⚠️', color: '#f59e0b' },
+		{ id: 'success', label: localeStore.t('editor.callout.success'), icon: '✓', color: '#22c55e' },
+		{ id: 'error', label: localeStore.t('editor.callout.error'), icon: '✕', color: '#ef4444' }
+	]);
 
 	// Link prompt state
 	let showLinkPrompt = $state(false);
@@ -164,29 +165,29 @@
 	let lastHighlightColor = $state('#fef08a'); // Default yellow
 
 	// Color palette (sober colors)
-	const textColors = [
-		{ id: 'default', color: null, label: 'Par defaut' },
-		{ id: 'red', color: '#ef4444', label: 'Rouge' },
-		{ id: 'orange', color: '#f97316', label: 'Orange' },
-		{ id: 'yellow', color: '#eab308', label: 'Jaune' },
-		{ id: 'green', color: '#22c55e', label: 'Vert' },
-		{ id: 'blue', color: '#3b82f6', label: 'Bleu' },
-		{ id: 'purple', color: '#a855f7', label: 'Violet' },
-		{ id: 'pink', color: '#ec4899', label: 'Rose' },
-		{ id: 'gray', color: '#6b7280', label: 'Gris' }
-	];
+	const textColors = $derived([
+		{ id: 'default', color: null, label: localeStore.t('editor.color.default') },
+		{ id: 'red', color: '#ef4444', label: localeStore.t('editor.color.red') },
+		{ id: 'orange', color: '#f97316', label: localeStore.t('editor.color.orange') },
+		{ id: 'yellow', color: '#eab308', label: localeStore.t('editor.color.yellow') },
+		{ id: 'green', color: '#22c55e', label: localeStore.t('editor.color.green') },
+		{ id: 'blue', color: '#3b82f6', label: localeStore.t('editor.color.blue') },
+		{ id: 'purple', color: '#a855f7', label: localeStore.t('editor.color.purple') },
+		{ id: 'pink', color: '#ec4899', label: localeStore.t('editor.color.pink') },
+		{ id: 'gray', color: '#6b7280', label: localeStore.t('editor.color.gray') }
+	]);
 
-	const highlightColors = [
-		{ id: 'none', color: null, label: 'Aucun' },
-		{ id: 'red', color: '#fecaca', label: 'Rouge' },
-		{ id: 'orange', color: '#fed7aa', label: 'Orange' },
-		{ id: 'yellow', color: '#fef08a', label: 'Jaune' },
-		{ id: 'green', color: '#bbf7d0', label: 'Vert' },
-		{ id: 'blue', color: '#bfdbfe', label: 'Bleu' },
-		{ id: 'purple', color: '#e9d5ff', label: 'Violet' },
-		{ id: 'pink', color: '#fbcfe8', label: 'Rose' },
-		{ id: 'gray', color: '#e5e7eb', label: 'Gris' }
-	];
+	const highlightColors = $derived([
+		{ id: 'none', color: null, label: localeStore.t('editor.highlight.none') },
+		{ id: 'red', color: '#fecaca', label: localeStore.t('editor.highlight.red') },
+		{ id: 'orange', color: '#fed7aa', label: localeStore.t('editor.highlight.orange') },
+		{ id: 'yellow', color: '#fef08a', label: localeStore.t('editor.highlight.yellow') },
+		{ id: 'green', color: '#bbf7d0', label: localeStore.t('editor.highlight.green') },
+		{ id: 'blue', color: '#bfdbfe', label: localeStore.t('editor.highlight.blue') },
+		{ id: 'purple', color: '#e9d5ff', label: localeStore.t('editor.highlight.purple') },
+		{ id: 'pink', color: '#fbcfe8', label: localeStore.t('editor.highlight.pink') },
+		{ id: 'gray', color: '#e5e7eb', label: localeStore.t('editor.highlight.gray') }
+	]);
 
 	// Common programming languages
 	const languages = [
@@ -947,7 +948,7 @@
 					}
 				}),
 				Placeholder.configure({
-					placeholder: 'Tapez / pour inserer un bloc...'
+					placeholder: localeStore.t('editor.placeholder')
 				}),
 				Image.configure({
 					inline: false,
@@ -1165,7 +1166,7 @@
 				<button
 					onclick={autoDetectLanguage}
 					class="flex items-center gap-1 px-2 py-1 text-xs bg-accent/10 border border-accent/30 text-accent rounded hover:bg-accent/20 transition-colors"
-					title="Detecter le langage automatiquement"
+					title={localeStore.t('editor.detectLanguage')}
 				>
 					<Sparkles size={12} />
 					<span class="text-[10px]">Auto</span>
@@ -1238,7 +1239,7 @@
 					onclick={() => (showTableMenu = !showTableMenu)}
 					class="flex items-center gap-1 px-2 py-1 text-xs bg-background border border-border rounded hover:bg-surface transition-colors"
 				>
-					<span class="text-foreground">Tableau</span>
+					<span class="text-foreground">{localeStore.t('editor.table')}</span>
 					<ChevronDown size={12} class="text-muted" />
 				</button>
 				{#if showTableMenu}
@@ -1250,7 +1251,7 @@
 					<div
 						class="absolute right-0 top-full mt-1 bg-background border border-border rounded-lg shadow-lg py-1 w-52 z-50"
 					>
-						<div class="px-2 py-1 text-[10px] text-muted uppercase tracking-wide">En-tetes</div>
+						<div class="px-2 py-1 text-[10px] text-muted uppercase tracking-wide">{localeStore.t('editor.headers')}</div>
 						<button
 							onclick={() => {
 								toggleHeaderRow();
@@ -1259,7 +1260,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<Rows3 size={12} />
-							Basculer ligne en-tete
+							{localeStore.t('editor.toggleHeaderRow')}
 						</button>
 						<button
 							onclick={() => {
@@ -1269,7 +1270,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<Columns3 size={12} />
-							Basculer colonne en-tete
+							{localeStore.t('editor.toggleHeaderCol')}
 						</button>
 						<button
 							onclick={() => {
@@ -1279,11 +1280,11 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<ToggleLeft size={12} />
-							Basculer cellule en-tete
+							{localeStore.t('editor.toggleHeaderCell')}
 						</button>
 
 						<div class="border-t border-border my-1"></div>
-						<div class="px-2 py-1 text-[10px] text-muted uppercase tracking-wide">Lignes</div>
+						<div class="px-2 py-1 text-[10px] text-muted uppercase tracking-wide">{localeStore.t('editor.rows')}</div>
 						<button
 							onclick={() => {
 								addRowBefore();
@@ -1292,7 +1293,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<Plus size={12} />
-							Ajouter ligne avant
+							{localeStore.t('editor.addRowBefore')}
 						</button>
 						<button
 							onclick={() => {
@@ -1302,7 +1303,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<Plus size={12} />
-							Ajouter ligne apres
+							{localeStore.t('editor.addRowAfter')}
 						</button>
 						<button
 							onclick={() => {
@@ -1312,11 +1313,11 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-red-500 flex items-center gap-2"
 						>
 							<Minus size={12} />
-							Supprimer ligne
+							{localeStore.t('editor.deleteRow')}
 						</button>
 
 						<div class="border-t border-border my-1"></div>
-						<div class="px-2 py-1 text-[10px] text-muted uppercase tracking-wide">Colonnes</div>
+						<div class="px-2 py-1 text-[10px] text-muted uppercase tracking-wide">{localeStore.t('editor.columns')}</div>
 						<button
 							onclick={() => {
 								addColumnBefore();
@@ -1325,7 +1326,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<Plus size={12} />
-							Ajouter colonne avant
+							{localeStore.t('editor.addColBefore')}
 						</button>
 						<button
 							onclick={() => {
@@ -1335,7 +1336,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-foreground flex items-center gap-2"
 						>
 							<Plus size={12} />
-							Ajouter colonne apres
+							{localeStore.t('editor.addColAfter')}
 						</button>
 						<button
 							onclick={() => {
@@ -1345,7 +1346,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-red-500 flex items-center gap-2"
 						>
 							<Minus size={12} />
-							Supprimer colonne
+							{localeStore.t('editor.deleteCol')}
 						</button>
 
 						<div class="border-t border-border my-1"></div>
@@ -1357,7 +1358,7 @@
 							class="w-full px-3 py-1.5 text-left text-sm hover:bg-surface transition-colors text-red-500 flex items-center gap-2"
 						>
 							<Trash2 size={12} />
-							Supprimer tableau
+							{localeStore.t('editor.deleteTable')}
 						</button>
 					</div>
 				{/if}
@@ -1384,7 +1385,7 @@
 					type="button"
 					class="handle-btn"
 					onclick={moveHandleBlockUp}
-					title="Deplacer vers le haut (Alt+Up)"
+					title={localeStore.t('editor.moveUp')}
 				>
 					<ChevronUp size={14} />
 				</button>
@@ -1392,7 +1393,7 @@
 					type="button"
 					class="handle-btn"
 					onclick={moveHandleBlockDown}
-					title="Deplacer vers le bas (Alt+Down)"
+					title={localeStore.t('editor.moveDown')}
 				>
 					<ChevronDown size={14} />
 				</button>
@@ -1432,7 +1433,7 @@
 				type="button"
 				onclick={() => editor?.chain().focus().toggleBold().run()}
 				class="toolbar-btn {editor.isActive('bold') ? 'active' : ''}"
-				title="Gras (Ctrl+B)"
+				title={localeStore.t('editor.bold')}
 			>
 				<Bold size={14} />
 			</button>
@@ -1442,7 +1443,7 @@
 				type="button"
 				onclick={() => editor?.chain().focus().toggleItalic().run()}
 				class="toolbar-btn {editor.isActive('italic') ? 'active' : ''}"
-				title="Italique (Ctrl+I)"
+				title={localeStore.t('editor.italic')}
 			>
 				<Italic size={14} />
 			</button>
@@ -1452,7 +1453,7 @@
 				type="button"
 				onclick={() => editor?.chain().focus().toggleUnderline().run()}
 				class="toolbar-btn {editor.isActive('underline') ? 'active' : ''}"
-				title="Souligne (Ctrl+U)"
+				title={localeStore.t('editor.underline')}
 			>
 				<UnderlineIcon size={14} />
 			</button>
@@ -1462,7 +1463,7 @@
 				type="button"
 				onclick={() => editor?.chain().focus().toggleStrike().run()}
 				class="toolbar-btn {editor.isActive('strike') ? 'active' : ''}"
-				title="Barre"
+				title={localeStore.t('editor.strikethrough')}
 			>
 				<Strikethrough size={14} />
 			</button>
@@ -1475,7 +1476,7 @@
 					type="button"
 					onclick={() => { showTextColorMenu = !showTextColorMenu; showHighlightColorMenu = false; }}
 					class="toolbar-btn {editor.isActive('textStyle') ? 'active' : ''}"
-					title="Couleur du texte"
+					title={localeStore.t('editor.textColor')}
 				>
 					<Palette size={14} />
 				</button>
@@ -1511,7 +1512,7 @@
 					type="button"
 					onclick={() => { showHighlightColorMenu = !showHighlightColorMenu; showTextColorMenu = false; }}
 					class="toolbar-btn {editor.isActive('highlight') ? 'active' : ''}"
-					title="Surlignage (Ctrl+Shift+H)"
+					title={localeStore.t('editor.highlight')}
 				>
 					<Highlighter size={14} />
 				</button>
@@ -1556,7 +1557,7 @@
 					showLinkPrompt = true;
 				}}
 				class="toolbar-btn {editor.isActive('link') ? 'active' : ''}"
-				title="Lien"
+				title={localeStore.t('editor.link')}
 			>
 				<LinkIcon size={14} />
 			</button>
@@ -1567,7 +1568,7 @@
 		<div class="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
 			<div class="flex items-center gap-2 text-sm text-muted">
 				<Upload size={16} class="animate-pulse" />
-				Upload en cours...
+				{localeStore.t('editor.uploading')}
 			</div>
 		</div>
 	{/if}
@@ -1593,7 +1594,7 @@
 			class="absolute z-50 bg-background border border-border rounded-lg shadow-lg py-2 w-48"
 			style="left: {slashMenuPosition.x}px; top: {slashMenuPosition.y}px"
 		>
-			<div class="px-3 py-1 text-xs text-muted uppercase tracking-wide">Type de callout</div>
+			<div class="px-3 py-1 text-xs text-muted uppercase tracking-wide">{localeStore.t('editor.calloutType')}</div>
 			{#each calloutTypes as callout (callout.id)}
 				<button
 					onclick={() => insertCallout(callout.id)}
@@ -1615,24 +1616,24 @@
 	{#if showLinkPrompt}
 		<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 			<div class="bg-background border border-border rounded-lg shadow-xl w-full max-w-sm p-4">
-				<h3 class="text-sm font-medium text-foreground mb-3">Inserer un lien</h3>
+				<h3 class="text-sm font-medium text-foreground mb-3">{localeStore.t('editor.insertLink')}</h3>
 				<div class="space-y-3">
 					<div>
-						<label class="block text-xs text-muted mb-1">URL</label>
+						<label class="block text-xs text-muted mb-1">{localeStore.t('editor.url')}</label>
 						<input
 							type="url"
 							bind:value={linkUrl}
-							placeholder="https://example.com"
+							placeholder={localeStore.t('editor.urlPlaceholder')}
 							class="w-full px-3 py-2 bg-surface border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
 							autofocus
 						/>
 					</div>
 					<div>
-						<label class="block text-xs text-muted mb-1">Texte (optionnel)</label>
+						<label class="block text-xs text-muted mb-1">{localeStore.t('editor.linkText')}</label>
 						<input
 							type="text"
 							bind:value={linkText}
-							placeholder="Texte du lien"
+							placeholder={localeStore.t('editor.linkTextPlaceholder')}
 							class="w-full px-3 py-2 bg-surface border border-border rounded text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
 						/>
 					</div>
@@ -1642,14 +1643,14 @@
 						onclick={() => (showLinkPrompt = false)}
 						class="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
 					>
-						Annuler
+						{localeStore.t('editor.insertLinkCancel')}
 					</button>
 					<button
 						onclick={insertLink}
 						disabled={!linkUrl}
 						class="px-3 py-1.5 text-sm bg-accent text-white rounded hover:opacity-90 transition-opacity disabled:opacity-50"
 					>
-						Inserer
+						{localeStore.t('editor.insertLinkSubmit')}
 					</button>
 				</div>
 			</div>
@@ -1658,7 +1659,7 @@
 
 	<!-- Keyboard shortcuts hint -->
 	<div class="keyboard-hint">
-		<kbd>Alt</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> deplacer le bloc
+		{localeStore.t('editor.moveBlockHint')}
 	</div>
 </div>
 

@@ -18,11 +18,13 @@
 		CheckSquare,
 		Link
 	} from 'lucide-svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
+	import type { TranslationKey } from '$lib/i18n';
 
 	interface Command {
 		id: string;
-		label: string;
-		description: string;
+		labelKey: TranslationKey;
+		descKey: TranslationKey;
 		icon: typeof Code;
 	}
 
@@ -37,23 +39,23 @@
 	let { query, position, selectedIndex, onSelect, onHover }: Props = $props();
 
 	const commands: Command[] = [
-		{ id: 'code', label: 'Bloc code', description: 'Inserer un bloc de code', icon: Code },
-		{ id: 'json', label: 'JSON', description: 'Bloc JSON avec visualisation', icon: Braces },
-		{ id: 'html', label: 'HTML', description: 'Bloc HTML avec apercu', icon: Globe },
-		{ id: 'css', label: 'CSS', description: 'Bloc CSS (styles)', icon: Palette },
-		{ id: 'image', label: 'Image', description: 'Uploader une image', icon: Image },
-		{ id: 'file', label: 'Fichier', description: 'Joindre un fichier (PDF, ZIP...)', icon: FileIcon },
-		{ id: 'table', label: 'Tableau', description: 'Inserer un tableau 3x3', icon: Table },
-		{ id: 'divider', label: 'Separateur', description: 'Ligne de separation horizontale', icon: Minus },
-		{ id: 'callout', label: 'Callout', description: 'Bloc d\'alerte (info, warning...)', icon: AlertCircle },
-		{ id: 'todo', label: 'Todo', description: 'Liste de taches avec cases', icon: CheckSquare },
-		{ id: 'link', label: 'Lien', description: 'Inserer un lien URL', icon: Link },
-		{ id: 'h1', label: 'Titre 1', description: 'Grand titre', icon: Heading1 },
-		{ id: 'h2', label: 'Titre 2', description: 'Titre moyen', icon: Heading2 },
-		{ id: 'h3', label: 'Titre 3', description: 'Petit titre', icon: Heading3 },
-		{ id: 'bullet', label: 'Liste', description: 'Liste a puces', icon: List },
-		{ id: 'numbered', label: 'Liste numerotee', description: 'Liste ordonnee', icon: ListOrdered },
-		{ id: 'quote', label: 'Citation', description: 'Bloc de citation', icon: Quote }
+		{ id: 'code', labelKey: 'slash.code', descKey: 'slash.codeDesc', icon: Code },
+		{ id: 'json', labelKey: 'slash.json', descKey: 'slash.jsonDesc', icon: Braces },
+		{ id: 'html', labelKey: 'slash.html', descKey: 'slash.htmlDesc', icon: Globe },
+		{ id: 'css', labelKey: 'slash.css', descKey: 'slash.cssDesc', icon: Palette },
+		{ id: 'image', labelKey: 'slash.image', descKey: 'slash.imageDesc', icon: Image },
+		{ id: 'file', labelKey: 'slash.file', descKey: 'slash.fileDesc', icon: FileIcon },
+		{ id: 'table', labelKey: 'slash.table', descKey: 'slash.tableDesc', icon: Table },
+		{ id: 'divider', labelKey: 'slash.divider', descKey: 'slash.dividerDesc', icon: Minus },
+		{ id: 'callout', labelKey: 'slash.callout', descKey: 'slash.calloutDesc', icon: AlertCircle },
+		{ id: 'todo', labelKey: 'slash.todo', descKey: 'slash.todoDesc', icon: CheckSquare },
+		{ id: 'link', labelKey: 'slash.link', descKey: 'slash.linkDesc', icon: Link },
+		{ id: 'h1', labelKey: 'slash.h1', descKey: 'slash.h1Desc', icon: Heading1 },
+		{ id: 'h2', labelKey: 'slash.h2', descKey: 'slash.h2Desc', icon: Heading2 },
+		{ id: 'h3', labelKey: 'slash.h3', descKey: 'slash.h3Desc', icon: Heading3 },
+		{ id: 'bullet', labelKey: 'slash.bullet', descKey: 'slash.bulletDesc', icon: List },
+		{ id: 'numbered', labelKey: 'slash.numbered', descKey: 'slash.numberedDesc', icon: ListOrdered },
+		{ id: 'quote', labelKey: 'slash.quote', descKey: 'slash.quoteDesc', icon: Quote }
 	];
 
 	// Filter using same keywords as BlockEditor
@@ -109,8 +111,8 @@
 					<cmd.icon size={16} class="text-muted" />
 				</div>
 				<div class="flex-1 min-w-0">
-					<div class="text-foreground font-medium">{cmd.label}</div>
-					<div class="text-xs text-muted truncate">{cmd.description}</div>
+					<div class="text-foreground font-medium">{localeStore.t(cmd.labelKey)}</div>
+					<div class="text-xs text-muted truncate">{localeStore.t(cmd.descKey)}</div>
 				</div>
 			</button>
 		{/each}

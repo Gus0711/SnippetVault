@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { X, UserPlus, Trash2, Eye, Pencil } from 'lucide-svelte';
+	import { localeStore } from '$lib/stores/locale.svelte';
 
 	interface Member {
 		userId: string;
@@ -23,14 +24,14 @@
 	let email = $state('');
 	let permission = $state<'read' | 'write'>('read');
 	let isAdding = $state(false);
-	let error = $state<string | null>(null);
+	let addError = $state<string | null>(null);
 	let updatingUserId = $state<string | null>(null);
 
 	async function addMember() {
 		if (!email.trim()) return;
 
 		isAdding = true;
-		error = null;
+		addError = null;
 
 		try {
 			const response = await fetch(`/api/collections/${collectionId}/members`, {
@@ -42,7 +43,7 @@
 			const data = await response.json();
 
 			if (!response.ok) {
-				error = data.error || 'Erreur lors de l\'ajout';
+				addError = data.error || localeStore.t('shareCollection.addError');
 				return;
 			}
 
@@ -51,7 +52,7 @@
 			onUpdate();
 		} catch (e) {
 			console.error('Error adding member:', e);
-			error = 'Erreur lors de l\'ajout';
+			addError = localeStore.t('shareCollection.addError');
 		} finally {
 			isAdding = false;
 		}
@@ -102,7 +103,7 @@
 			role="dialog"
 		>
 			<div class="flex items-center justify-between px-4 py-3 border-b border-border">
-				<h2 class="font-medium text-foreground">Partager "{collectionName}"</h2>
+				<h2 class="font-medium text-foreground">{localeStore.t('shareCollection.title', { name: collectionName })}</h2>
 				<button
 					onclick={onClose}
 					class="p-1 rounded hover:bg-surface text-muted hover:text-foreground transition-colors"
@@ -115,21 +116,21 @@
 				<!-- Add member form -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-foreground mb-2">
-						Ajouter un membre
+						{localeStore.t('shareCollection.addMember')}
 					</label>
 					<div class="flex gap-2">
 						<input
 							type="email"
 							bind:value={email}
-							placeholder="email@example.com"
+							placeholder={localeStore.t('shareCollection.emailPlaceholder')}
 							class="flex-1 px-3 py-2 bg-surface border border-border rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 						/>
 						<select
 							bind:value={permission}
 							class="px-3 py-2 bg-surface border border-border rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
 						>
-							<option value="read">Lecture</option>
-							<option value="write">Ecriture</option>
+							<option value="read">{localeStore.t('shareCollection.read')}</option>
+							<option value="write">{localeStore.t('shareCollection.write')}</option>
 						</select>
 						<button
 							onclick={addMember}
@@ -139,19 +140,19 @@
 							<UserPlus size={16} />
 						</button>
 					</div>
-					{#if error}
-						<p class="text-sm text-red-500 mt-2">{error}</p>
+					{#if addError}
+						<p class="text-sm text-red-500 mt-2">{addError}</p>
 					{/if}
 				</div>
 
 				<!-- Members list -->
 				<div>
 					<h3 class="text-sm font-medium text-muted mb-2">
-						Membres ({members.length})
+						{localeStore.t('shareCollection.members', { count: members.length })}
 					</h3>
 					{#if members.length === 0}
 						<p class="text-sm text-muted py-4 text-center">
-							Aucun membre. Ajoutez des utilisateurs pour partager cette collection.
+							{localeStore.t('shareCollection.noMembers')}
 						</p>
 					{:else}
 						<div class="space-y-2 max-h-60 overflow-y-auto">
@@ -170,13 +171,13 @@
 											disabled={updatingUserId === member.userId}
 											class="px-2 py-1 bg-background border border-border rounded text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50"
 										>
-											<option value="read">Lecture</option>
-											<option value="write">Ecriture</option>
+											<option value="read">{localeStore.t('shareCollection.read')}</option>
+											<option value="write">{localeStore.t('shareCollection.write')}</option>
 										</select>
 										<button
 											onclick={() => removeMember(member.userId)}
 											class="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-											title="Retirer"
+											title={localeStore.t('shareCollection.remove')}
 										>
 											<Trash2 size={14} />
 										</button>
@@ -189,15 +190,15 @@
 
 				<!-- Legend -->
 				<div class="mt-4 pt-4 border-t border-border">
-					<p class="text-xs text-muted mb-2">Niveaux d'acces :</p>
+					<p class="text-xs text-muted mb-2">{localeStore.t('shareCollection.accessLevels')}</p>
 					<div class="flex gap-4 text-xs text-muted">
 						<span class="flex items-center gap-1">
 							<Eye size={12} />
-							Lecture : voir les snippets
+							{localeStore.t('shareCollection.readAccess')}
 						</span>
 						<span class="flex items-center gap-1">
 							<Pencil size={12} />
-							Ecriture : creer et modifier
+							{localeStore.t('shareCollection.writeAccess')}
 						</span>
 					</div>
 				</div>
@@ -208,7 +209,7 @@
 					onclick={onClose}
 					class="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
 				>
-					Fermer
+					{localeStore.t('shareCollection.close')}
 				</button>
 			</div>
 		</div>

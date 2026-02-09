@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import CollectionTree from './CollectionTree.svelte';
 	import type { Collection } from '$lib/server/db/schema';
+	import { localeStore } from '$lib/stores/locale.svelte';
 	import {
 		FolderPlus,
 		LayoutDashboard,
@@ -71,7 +72,7 @@
 			<button
 				onclick={onToggle}
 				class="p-0.5 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
-				title="Collapse"
+				title={localeStore.t('sidebar.collapse')}
 			>
 				<ChevronLeft size={12} />
 			</button>
@@ -90,14 +91,14 @@
 						: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors"
 				>
 					<LayoutDashboard size={14} strokeWidth={1.5} />
-					<span>Snippets</span>
+					<span>{localeStore.t('sidebar.snippets')}</span>
 				</a>
 				<a
 					href="/search"
 					class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] text-muted hover:text-foreground hover:bg-background/70 transition-colors"
 				>
 					<Search size={14} strokeWidth={1.5} />
-					<span>Recherche</span>
+					<span>{localeStore.t('sidebar.search')}</span>
 				</a>
 			</div>
 
@@ -107,7 +108,7 @@
 					<div class="px-1.5 py-1">
 						<span class="text-[9px] text-muted/60 tracking-wide flex items-center gap-1">
 							<Star size={9} class="fill-yellow-500 text-yellow-500" />
-							Favoris
+							{localeStore.t('sidebar.favorites')}
 						</span>
 					</div>
 					<div class="px-0.5">
@@ -128,11 +129,11 @@
 
 			<!-- Collections header -->
 			<div class="px-1.5 py-1 mt-1 flex items-center justify-between">
-				<span class="text-[9px] text-muted/60 tracking-wide">Collections</span>
+				<span class="text-[9px] text-muted/60 tracking-wide">{localeStore.t('sidebar.collections')}</span>
 				<button
 					onclick={onCreateCollection}
 					class="p-0.5 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
-					title="Nouvelle collection"
+					title={localeStore.t('sidebar.newCollection')}
 				>
 					<FolderPlus size={11} strokeWidth={1.5} />
 				</button>
@@ -141,7 +142,7 @@
 			<!-- Collections tree -->
 			<div class="px-0.5">
 				{#if collections.length === 0}
-					<p class="px-1.5 py-1.5 text-[10px] text-muted italic">Aucune collection</p>
+					<p class="px-1.5 py-1.5 text-[10px] text-muted italic">{localeStore.t('sidebar.noCollections')}</p>
 				{:else}
 					<CollectionTree {collections} {isCollectionActive} />
 				{/if}
@@ -151,7 +152,7 @@
 			{#if sharedCollections.length > 0}
 				<div class="mt-2 pt-1 border-t border-border/40">
 					<div class="px-1.5 py-1">
-						<span class="text-[9px] text-muted/60 tracking-wide">Partagees</span>
+						<span class="text-[9px] text-muted/60 tracking-wide">{localeStore.t('sidebar.shared')}</span>
 					</div>
 					<div class="px-0.5">
 						{#each sharedCollections as collection (collection.id)}
@@ -163,8 +164,8 @@
 									? 'bg-accent/10 text-accent'
 									: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors group"
 								title="{collection.ownerName} - {collection.permission === 'read'
-									? 'Lecture seule'
-									: 'Lecture/Ecriture'}"
+									? localeStore.t('sidebar.readOnly')
+									: localeStore.t('sidebar.readWrite')}"
 							>
 								{#if collection.icon}
 									<span class="text-[11px]">{collection.icon}</span>
@@ -188,20 +189,20 @@
 					class="p-1.5 rounded {isActive('/dashboard')
 						? 'bg-accent/10 text-accent'
 						: 'text-muted hover:text-foreground hover:bg-background/70'} transition-colors"
-					title="Snippets"
+					title={localeStore.t('sidebar.snippets')}
 				>
 					<LayoutDashboard size={15} strokeWidth={1.5} />
 				</a>
 				<a
 					href="/search"
 					class="p-1.5 rounded text-muted hover:text-foreground hover:bg-background/70 transition-colors"
-					title="Recherche"
+					title={localeStore.t('sidebar.search')}
 				>
 					<Search size={15} strokeWidth={1.5} />
 				</a>
 				{#if favoriteSnippets.length > 0}
 					<div class="w-5 h-px bg-border/40 my-0.5"></div>
-					<span class="p-1.5 text-yellow-500" title="Favoris ({favoriteSnippets.length})">
+					<span class="p-1.5 text-yellow-500" title="{localeStore.t('sidebar.favorites')} ({favoriteSnippets.length})">
 						<Star size={15} strokeWidth={1.5} class="fill-yellow-500" />
 					</span>
 				{/if}
@@ -209,13 +210,13 @@
 				<button
 					onclick={onCreateCollection}
 					class="p-1.5 rounded text-muted hover:text-foreground hover:bg-background/70 transition-colors"
-					title="Nouvelle collection"
+					title={localeStore.t('sidebar.newCollection')}
 				>
 					<FolderPlus size={15} strokeWidth={1.5} />
 				</button>
 				{#if sharedCollections.length > 0}
 					<div class="w-5 h-px bg-border/40 my-0.5"></div>
-					<span class="p-1.5 text-muted" title="Collections partagees">
+					<span class="p-1.5 text-muted" title={localeStore.t('sidebar.sharedCollections')}>
 						<Users size={15} strokeWidth={1.5} />
 					</span>
 				{/if}
@@ -225,7 +226,7 @@
 				<button
 					onclick={onToggle}
 					class="p-1 rounded hover:bg-background text-muted hover:text-foreground transition-colors"
-					title="Expand"
+					title={localeStore.t('sidebar.expand')}
 				>
 					<ChevronRight size={12} />
 				</button>
@@ -241,7 +242,7 @@
 				class="flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] text-muted hover:text-foreground hover:bg-background/70 transition-colors"
 			>
 				<Settings size={14} strokeWidth={1.5} />
-				<span>Parametres</span>
+				<span>{localeStore.t('sidebar.settings')}</span>
 			</a>
 		</div>
 	{/if}

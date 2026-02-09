@@ -119,7 +119,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	changePassword: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { passwordError: 'Non authentifie' });
+			return fail(401, { passwordError: 'settings.error.notAuthenticated' });
 		}
 
 		const formData = await request.formData();
@@ -128,15 +128,15 @@ export const actions: Actions = {
 		const confirmPassword = formData.get('confirmPassword')?.toString();
 
 		if (!currentPassword || !newPassword || !confirmPassword) {
-			return fail(400, { passwordError: 'Tous les champs sont requis' });
+			return fail(400, { passwordError: 'settings.error.allFieldsRequired' });
 		}
 
 		if (newPassword.length < 8) {
-			return fail(400, { passwordError: 'Le nouveau mot de passe doit contenir au moins 8 caracteres' });
+			return fail(400, { passwordError: 'settings.error.passwordTooShort' });
 		}
 
 		if (newPassword !== confirmPassword) {
-			return fail(400, { passwordError: 'Les mots de passe ne correspondent pas' });
+			return fail(400, { passwordError: 'settings.error.passwordMismatch' });
 		}
 
 		// Get user with password hash
@@ -147,12 +147,12 @@ export const actions: Actions = {
 			.get();
 
 		if (!user) {
-			return fail(404, { passwordError: 'Utilisateur non trouve' });
+			return fail(404, { passwordError: 'settings.error.userNotFound' });
 		}
 
 		// Verify current password
 		if (!verifyPassword(currentPassword, user.passwordHash)) {
-			return fail(400, { passwordError: 'Mot de passe actuel incorrect' });
+			return fail(400, { passwordError: 'settings.error.wrongPassword' });
 		}
 
 		try {
@@ -172,13 +172,13 @@ export const actions: Actions = {
 			return { passwordSuccess: true };
 		} catch (error) {
 			console.error('Error changing password:', error);
-			return fail(500, { passwordError: 'Erreur lors du changement de mot de passe' });
+			return fail(500, { passwordError: 'settings.error.passwordChangeError' });
 		}
 	},
 
 	regenerateApiKey: async ({ locals }) => {
 		if (!locals.user) {
-			return fail(401, { error: 'Non authentifie' });
+			return fail(401, { error: 'settings.error.notAuthenticated' });
 		}
 
 		try {
@@ -196,30 +196,30 @@ export const actions: Actions = {
 			return { success: true, apiKey: newApiKey };
 		} catch (error) {
 			console.error('Error regenerating API key:', error);
-			return fail(500, { error: 'Erreur lors de la regeneration de la cle API' });
+			return fail(500, { error: 'settings.error.apiKeyRegenError' });
 		}
 	},
 
 	createInvitation: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { error: 'Non authentifie' });
+			return fail(401, { error: 'settings.error.notAuthenticated' });
 		}
 
 		if (locals.user.role !== 'admin') {
-			return fail(403, { error: 'Acces refuse' });
+			return fail(403, { error: 'settings.error.accessDenied' });
 		}
 
 		const formData = await request.formData();
 		const email = formData.get('email')?.toString().toLowerCase().trim();
 
 		if (!email || !email.includes('@')) {
-			return fail(400, { invitationError: 'Email valide requis' });
+			return fail(400, { invitationError: 'settings.error.validEmailRequired' });
 		}
 
 		// Check if email already exists as a user
 		const existingUser = await db.select().from(users).where(eq(users.email, email)).get();
 		if (existingUser) {
-			return fail(400, { invitationError: 'Un utilisateur avec cet email existe deja' });
+			return fail(400, { invitationError: 'settings.error.userEmailExists' });
 		}
 
 		// Check if there's already a pending invitation
@@ -232,7 +232,7 @@ export const actions: Actions = {
 			.get();
 
 		if (existingInvitation) {
-			return fail(400, { invitationError: 'Une invitation est deja en attente pour cet email' });
+			return fail(400, { invitationError: 'settings.error.invitationPending' });
 		}
 
 		try {
@@ -251,24 +251,24 @@ export const actions: Actions = {
 			return { invitationSuccess: true };
 		} catch (error) {
 			console.error('Error creating invitation:', error);
-			return fail(500, { invitationError: 'Erreur lors de la creation de l\'invitation' });
+			return fail(500, { invitationError: 'settings.error.invitationCreateError' });
 		}
 	},
 
 	revokeInvitation: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { error: 'Non authentifie' });
+			return fail(401, { error: 'settings.error.notAuthenticated' });
 		}
 
 		if (locals.user.role !== 'admin') {
-			return fail(403, { error: 'Acces refuse' });
+			return fail(403, { error: 'settings.error.accessDenied' });
 		}
 
 		const formData = await request.formData();
 		const invitationId = formData.get('invitationId')?.toString();
 
 		if (!invitationId) {
-			return fail(400, { error: 'ID invitation requis' });
+			return fail(400, { error: 'settings.error.invitationIdRequired' });
 		}
 
 		try {
@@ -276,28 +276,28 @@ export const actions: Actions = {
 			return { revokeSuccess: true };
 		} catch (error) {
 			console.error('Error revoking invitation:', error);
-			return fail(500, { error: 'Erreur lors de la revocation' });
+			return fail(500, { error: 'settings.error.revokeError' });
 		}
 	},
 
 	deleteUser: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { error: 'Non authentifie' });
+			return fail(401, { error: 'settings.error.notAuthenticated' });
 		}
 
 		if (locals.user.role !== 'admin') {
-			return fail(403, { error: 'Acces refuse' });
+			return fail(403, { error: 'settings.error.accessDenied' });
 		}
 
 		const formData = await request.formData();
 		const userId = formData.get('userId')?.toString();
 
 		if (!userId) {
-			return fail(400, { userError: 'ID utilisateur requis' });
+			return fail(400, { userError: 'settings.error.userIdRequired' });
 		}
 
 		if (userId === locals.user.id) {
-			return fail(400, { userError: 'Vous ne pouvez pas supprimer votre propre compte' });
+			return fail(400, { userError: 'settings.error.cannotDeleteSelf' });
 		}
 
 		try {
@@ -305,13 +305,13 @@ export const actions: Actions = {
 			return { deleteUserSuccess: true };
 		} catch (error) {
 			console.error('Error deleting user:', error);
-			return fail(500, { userError: 'Erreur lors de la suppression' });
+			return fail(500, { userError: 'settings.error.deleteUserError' });
 		}
 	},
 
 	createTag: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { tagError: 'Non authentifie' });
+			return fail(401, { tagError: 'settings.error.notAuthenticated' });
 		}
 
 		const formData = await request.formData();
@@ -319,7 +319,7 @@ export const actions: Actions = {
 		const color = formData.get('color')?.toString() || null;
 
 		if (!name) {
-			return fail(400, { tagError: 'Nom du tag requis' });
+			return fail(400, { tagError: 'settings.error.tagNameRequired' });
 		}
 
 		// Check if tag already exists
@@ -330,7 +330,7 @@ export const actions: Actions = {
 			.get();
 
 		if (existing) {
-			return fail(400, { tagError: 'Un tag avec ce nom existe deja' });
+			return fail(400, { tagError: 'settings.error.tagNameExists' });
 		}
 
 		try {
@@ -343,13 +343,13 @@ export const actions: Actions = {
 			return { tagSuccess: true };
 		} catch (error) {
 			console.error('Error creating tag:', error);
-			return fail(500, { tagError: 'Erreur lors de la creation du tag' });
+			return fail(500, { tagError: 'settings.error.tagCreateError' });
 		}
 	},
 
 	updateTag: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { tagError: 'Non authentifie' });
+			return fail(401, { tagError: 'settings.error.notAuthenticated' });
 		}
 
 		const formData = await request.formData();
@@ -358,7 +358,7 @@ export const actions: Actions = {
 		const color = formData.get('color')?.toString() || null;
 
 		if (!tagId || !name) {
-			return fail(400, { tagError: 'Donnees manquantes' });
+			return fail(400, { tagError: 'settings.error.missingData' });
 		}
 
 		// Check ownership
@@ -369,7 +369,7 @@ export const actions: Actions = {
 			.get();
 
 		if (!tag) {
-			return fail(404, { tagError: 'Tag non trouve' });
+			return fail(404, { tagError: 'settings.error.tagNotFound' });
 		}
 
 		// Check for duplicate name
@@ -380,7 +380,7 @@ export const actions: Actions = {
 			.get();
 
 		if (duplicate && duplicate.id !== tagId) {
-			return fail(400, { tagError: 'Un tag avec ce nom existe deja' });
+			return fail(400, { tagError: 'settings.error.tagNameExists' });
 		}
 
 		try {
@@ -391,20 +391,20 @@ export const actions: Actions = {
 			return { tagSuccess: true };
 		} catch (error) {
 			console.error('Error updating tag:', error);
-			return fail(500, { tagError: 'Erreur lors de la mise a jour du tag' });
+			return fail(500, { tagError: 'settings.error.tagUpdateError' });
 		}
 	},
 
 	deleteTag: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { tagError: 'Non authentifie' });
+			return fail(401, { tagError: 'settings.error.notAuthenticated' });
 		}
 
 		const formData = await request.formData();
 		const tagId = formData.get('tagId')?.toString();
 
 		if (!tagId) {
-			return fail(400, { tagError: 'ID tag requis' });
+			return fail(400, { tagError: 'settings.error.tagIdRequired' });
 		}
 
 		// Check ownership
@@ -415,7 +415,7 @@ export const actions: Actions = {
 			.get();
 
 		if (!tag) {
-			return fail(404, { tagError: 'Tag non trouve' });
+			return fail(404, { tagError: 'settings.error.tagNotFound' });
 		}
 
 		try {
@@ -426,25 +426,25 @@ export const actions: Actions = {
 			return { tagDeleteSuccess: true };
 		} catch (error) {
 			console.error('Error deleting tag:', error);
-			return fail(500, { tagError: 'Erreur lors de la suppression du tag' });
+			return fail(500, { tagError: 'settings.error.tagDeleteError' });
 		}
 	},
 
 	saveGithubToken: async ({ locals, request }) => {
 		if (!locals.user) {
-			return fail(401, { githubError: 'Non authentifie' });
+			return fail(401, { githubError: 'settings.error.notAuthenticated' });
 		}
 
 		const formData = await request.formData();
 		const token = formData.get('githubToken')?.toString().trim();
 
 		if (!token) {
-			return fail(400, { githubError: 'Token requis' });
+			return fail(400, { githubError: 'settings.error.tokenRequired' });
 		}
 
 		// Validate token format (GitHub PAT starts with ghp_ or github_pat_)
 		if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
-			return fail(400, { githubError: 'Format de token invalide. Le token doit commencer par ghp_ ou github_pat_' });
+			return fail(400, { githubError: 'settings.error.invalidTokenFormat' });
 		}
 
 		try {
@@ -460,13 +460,13 @@ export const actions: Actions = {
 				});
 			} catch (fetchError) {
 				console.error('GitHub API fetch error:', fetchError);
-				return fail(500, { githubError: 'Impossible de contacter l\'API GitHub' });
+				return fail(500, { githubError: 'settings.error.githubApiError' });
 			}
 
 			if (!testResponse.ok) {
 				const errorBody = await testResponse.text().catch(() => '');
 				console.error('GitHub API error:', testResponse.status, errorBody);
-				return fail(400, { githubError: 'Token invalide ou expire' });
+				return fail(400, { githubError: 'settings.error.invalidToken' });
 			}
 
 			// Encrypt and save the token
@@ -475,7 +475,7 @@ export const actions: Actions = {
 				encryptedToken = encrypt(token);
 			} catch (encryptError) {
 				console.error('Encryption error:', encryptError);
-				return fail(500, { githubError: 'Erreur de chiffrement du token' });
+				return fail(500, { githubError: 'settings.error.encryptionError' });
 			}
 
 			await db
@@ -489,13 +489,13 @@ export const actions: Actions = {
 			return { githubSuccess: true };
 		} catch (error) {
 			console.error('Error saving GitHub token:', error);
-			return fail(500, { githubError: 'Erreur lors de la sauvegarde en base de donnees' });
+			return fail(500, { githubError: 'settings.error.saveError' });
 		}
 	},
 
 	removeGithubToken: async ({ locals }) => {
 		if (!locals.user) {
-			return fail(401, { githubError: 'Non authentifie' });
+			return fail(401, { githubError: 'settings.error.notAuthenticated' });
 		}
 
 		try {
@@ -510,7 +510,7 @@ export const actions: Actions = {
 			return { githubRemoveSuccess: true };
 		} catch (error) {
 			console.error('Error removing GitHub token:', error);
-			return fail(500, { githubError: 'Erreur lors de la suppression du token' });
+			return fail(500, { githubError: 'settings.error.tokenDeleteError' });
 		}
 	}
 };
